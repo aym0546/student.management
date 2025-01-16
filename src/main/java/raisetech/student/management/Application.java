@@ -25,33 +25,20 @@ public class Application {
 
 //	情報取得メソッド
 	@GetMapping("/student")
-	public String getStudent(@RequestParam String name) {
-		Student student = repository.searchByName(name);
-		return student.getName() + " " + student.getAge() + "歳";
+	public List<Student> getStudentList(@RequestParam String name) {
+		return repository.searchByName(name);
 	}
 
 //	生徒情報の一覧表示
 	@GetMapping("/students")
 	public List<Student> listDisplay() {
-		return repository.display();
+		return repository.displayStudent();
 	}
 
-//	生徒情報の登録
-	@PostMapping("/student")
-	public void registerStudent(String name, int age) {
-		repository.registerStudent(name, age);
-	}
-
-//	生徒情報の変更
-	@PatchMapping("/student")
-	public void updateStudent(String name, int age) {
-		repository.updateStudent(name, age);
-	}
-
-//	生徒情報の削除
-	@DeleteMapping("/student")
-	public void deleteStudent(String name) {
-		repository.deleteStudent(name);
+//	コース情報の一覧表示
+	@GetMapping("/students_courses")
+	public List<StudentsCourse> getCousesList() {
+		return repository.displayCourse();
 	}
 
 }
