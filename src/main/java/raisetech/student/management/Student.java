@@ -1,22 +1,18 @@
 package raisetech.student.management;
 
+import com.fasterxml.jackson.annotation.JsonTypeInfo.Id;
+import lombok.Getter;
+import lombok.Setter;
+
+@Getter
+@Setter
 public class Student {
-  private String name;
+  private String studentId;
+  private String fullName;
+  private String namePronunciation;
+  private String nickname;
+  private String email;
+  private String area;
   private int age;
-
-  public String getName() {
-    return name;
-  }
-
-  public void setName(String name) {
-    this.name = name;
-  }
-
-  public int getAge() {
-    return age;
-  }
-
-  public void setAge(int age) {
-    this.age = age;
-  }
+  private String gender;
 }
