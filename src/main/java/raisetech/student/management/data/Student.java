@@ -1,6 +1,5 @@
-package raisetech.student.management;
+package raisetech.student.management.data;
 
-import com.fasterxml.jackson.annotation.JsonTypeInfo.Id;
 import lombok.Getter;
 import lombok.Setter;
 
