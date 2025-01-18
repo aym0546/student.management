@@ -1,11 +1,15 @@
 package raisetech.student.management.controller;
 
+import java.util.ArrayList;
 import java.util.List;
+import java.util.stream.Collectors;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RestController;
+import raisetech.student.management.controller.converter.StudentConverter;
 import raisetech.student.management.data.Student;
 import raisetech.student.management.data.StudentsCourse;
+import raisetech.student.management.domain.StudentDetail;
 import raisetech.student.management.service.StudentService;
 
 @RestController
@@ -13,10 +17,20 @@ import raisetech.student.management.service.StudentService;
 public class StudentController {
 
   private StudentService service;
+  private StudentConverter converter;
 
   @Autowired
-  public StudentController(StudentService service) {
+  public StudentController(StudentService service, StudentConverter converter) {
     this.service = service;
+    this.converter = converter;
+  }
+
+//  各生徒の受講情報の一覧表示
+  @GetMapping("/student")
+  public List<StudentDetail> getStudent() {
+    List<Student> students = service.getStudentList();
+    List<StudentsCourse> studentsCourses = service.getStudentCourseList();
+    return converter.convertStudentDetails(students, studentsCourses);  // Converterの実装
   }
 
   //	生徒情報の一覧表示
