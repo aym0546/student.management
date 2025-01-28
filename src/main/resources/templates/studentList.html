@@ -21,6 +21,7 @@
     <th>年齢</th>
     <th>性別</th>
     <th>備考</th>
+    <th>キャンセル</th>
     <th>コース</th>
   </tr>
   </thead>
@@ -28,37 +29,23 @@
   <tr th:each="studentDetail : ${studentList}" th:object="${studentDetail}">
 
     <!-- 最初の受講コースに対応する行 -->
-    <td rowspan="*{studentsCourses.size()}"
-        th:text="*{student.studentId}">受講生ID</td>
-    <td rowspan="*{studentsCourses.size()}">
+    <td th:text="*{student.studentId}">受講生ID</td>
+    <td>
       <a href="/studentList" th:href="@{/student/{student_id}(student_id=${studentDetail.student.studentId})}"
          th:text="*{student.fullName}">氏名</a>
     </td>
-    <td rowspan="*{studentsCourses.size()}"
-        th:text="*{student.namePronunciation}">ふりがな</td>
-    <td rowspan="*{studentsCourses.size()}"
-        th:text="*{student.nickname}">ふりがな</td>
-    <td rowspan="*{studentsCourses.size()}"
-        th:text="*{student.email}">メールアドレス</td>
-    <td rowspan="*{studentsCourses.size()}"
-        th:text="*{student.area}">地域</td>
-    <td rowspan="*{studentsCourses.size()}"
-        th:text="*{student.age}">年齢</td>
-    <td rowspan="*{studentsCourses.size()}"
-        th:text="*{student.gender}">性別</td>
-    <td rowspan="*{studentsCourses.size()}"
-        th:text="*{student.remark}">備考</td>
+    <td th:text="*{student.namePronunciation}">ふりがな</td>
+    <td th:text="*{student.nickname}">ふりがな</td>
+    <td th:text="*{student.email}">メールアドレス</td>
+    <td th:text="*{student.area}">地域</td>
+    <td th:text="*{student.age}">年齢</td>
+    <td th:text="*{student.gender}">性別</td>
+    <td th:text="*{student.remark}">備考</td>
+    <td>
+      <input type="checkbox" th:checked="*{student.isDeleted}" />
+    </td>
 
-    <!-- 最初の受講コース
-    <td th:text="${studentDetail.studentsCourses[0].course}"></td>
-    -->
-  <!-- 残りの受講コース
-  </tr>
-  <tr th:each="course, stat : ${studentDetail.studentsCourses}" th:if="${stat.index > 0}">
-    <td th:text="${course.course}"></td>
-  </tr>
-  -->
-
+    <td th:text="${studentDetail.studentsCourses[0].course}">コース情報（リスト表示）</td>
     <td>
       <ul>
         <li th:each="course : ${studentDetail.studentsCourses}"

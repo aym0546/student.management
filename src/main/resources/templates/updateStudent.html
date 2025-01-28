@@ -6,9 +6,9 @@
   <title>受講生詳細</title>
 </head>
 <body>
-<!--/*  IntelliJ IDEA [CE] では Thymeleaf がサポートされないので、警告⚠️が出まくるが、間違いがなければ無視でOK  */-->
+<!--/*  IntelliJ IDEA [CE] では Thymeleaf がサポートされないので、警告⚠️が頻出するが、間違いがなければ無視でOK  */-->
 <h1>受講生詳細</h1>
-<!--/*    */-->
+
 <form th:action="@{/updateStudent}" th:object="${studentDetail}" method="post">
 
   <div>
@@ -57,13 +57,8 @@
     <input type="text" id="remark" th:field="*{student.remark}" />
   </div>
   <div>
-    <label>キャンセル</label>
-    <label>
-      <input type="radio" th:field="*{student.isDeleted}" value="true" /> 削除
-    </label>
-    <label>
-      <input type="radio" th:field="*{student.isDeleted}" value="false" /> キャンセルしない
-    </label>
+    <label for="isDeleted">キャンセル</label>
+      <input type="checkbox" id="isDeleted" th:field="*{student.deleted}" />
   </div>
 
   <div th:each="studentsCourse, stat : *{studentsCourses}">

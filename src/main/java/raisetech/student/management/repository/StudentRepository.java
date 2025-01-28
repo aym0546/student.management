@@ -61,7 +61,7 @@ public interface StudentRepository {
   void registerStudentsCourses(StudentsCourse studentsCourse);
 
 //  受講生情報の更新
-  @Update("UPDATE students SET full_name = #{fullName}, name_pronunciation = #{namePronunciation}, nickname = #{nickname}, email = #{email}, area = #{area}, age = #{age}, gender = #{gender}, remark = #{remark}, is_deleted = false WHERE student_id = #{studentId}")
+  @Update("UPDATE students SET full_name = #{fullName}, name_pronunciation = #{namePronunciation}, nickname = #{nickname}, email = #{email}, area = #{area}, age = #{age}, gender = #{gender}, remark = #{remark}, is_deleted = #{isDeleted} WHERE student_id = #{studentId}")
   void updateStudent(Student updateStudent);
 
 //  コース情報の更新
