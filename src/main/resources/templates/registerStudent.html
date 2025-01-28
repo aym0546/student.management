@@ -1,0 +1,74 @@
+<!DOCTYPE html>
+<html lang="ja"
+      xmlns:th="http://www.thymeleaf.org">
+<head>
+  <meta charset="UTF-8">
+  <title>受講生登録</title>
+</head>
+<body>
+<!--/*  IntelliJ IDEA [CE] では Thymeleaf がサポートされないので、警告⚠️が出まくるが、間違いがなければ無視でOK  */-->
+<h1>受講生登録</h1>
+<!--/*    */-->
+<form th:action="@{/registerStudent}" th:object="${studentDetail}" method="post">
+
+  <div>
+    <label for="studentId">ID</label>
+    <input type="text" id="studentId" th:field="*{student.studentId}" required />
+  </div>
+
+  <div>
+    <label for="fullName">名前</label>
+    <input type="text" id="fullName" th:field="*{student.fullName}" required />
+  </div>
+  <div>
+    <label for="namePronunciation">ふりがな</label>
+    <input type="text" id="namePronunciation" th:field="*{student.namePronunciation}" required />
+  </div>
+  <div>
+    <label for="nickname">ニックネーム</label>
+    <input type="text" id="nickname" th:field="*{student.nickname}" required />
+  </div>
+  <div>
+    <label for="email">Emailアドレス</label>
+    <input type="email" id="email" th:field="*{student.email}" required />
+  </div>
+  <div>
+    <label for="area">地域</label>
+    <input type="text" id="area" th:field="*{student.area}" required />
+  </div>
+  <div>
+    <label for="age">年齢</label>
+    <input type="number" min="0" max="120" id="age" th:field="*{student.age}" required />
+  </div>
+  <div>
+    <label>性別</label>
+    <label>
+      <input type="radio" th:field="*{student.gender}" value="Male" /> Male
+    </label>
+    <label>
+      <input type="radio" th:field="*{student.gender}" value="Female" /> Female
+    </label>
+    <label>
+      <input type="radio" th:field="*{student.gender}" value="Other" /> Other
+    </label>
+  </div>
+  <div>
+    <label for="remark">備考</label>
+    <textarea id="remark" th:field="*{student.remark}"></textarea>
+  </div>
+  <div th:each="studentsCourse, stat : *{studentsCourses}">
+    <label for="course">受講コース名</label>
+    <!--/* forとidは紐付ける */-->
+    <input type="text"
+           id="course"
+    th:id="studentsCourse.__${stat.index}__.course"
+    th:field="*{studentsCourses[__${stat.index}__].course}" />
+    <!--/* studentsCourseはリスト型なので、リストで受け取る必要あり */-->
+</div>
+<div>
+<button type="submit">登録</button>
+<button type="reset">リセット</button>
+</div>
+</form>
+</body>
+</html>
