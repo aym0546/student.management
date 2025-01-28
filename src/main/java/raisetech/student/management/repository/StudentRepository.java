@@ -11,17 +11,12 @@ import raisetech.student.management.data.StudentsCourse;
 
 /**
  * 受講生情報を扱うリポジトリ（インターフェース）
- *
  * 全件検索や単一条件での検索、コース情報の検索が行えるクラスです。
  */
 
 @Mapper
 public interface StudentRepository {
   // データベースを操作するためのインターフェース
-
-//  検索メソッド
-  @Select("SELECT * FROM students WHERE name = #{name}")
-  List<Student> searchByName(String name); // この引数のnameを↑の#{name}として受け取ってくれる
 
   /**
    * 受講生の一覧表示
