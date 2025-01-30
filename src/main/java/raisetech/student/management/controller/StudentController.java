@@ -3,20 +3,22 @@ package raisetech.student.management.controller;
 import java.util.Arrays;
 import java.util.List;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.stereotype.Controller;
+import org.springframework.http.ResponseEntity;
 import org.springframework.ui.Model;
 import org.springframework.validation.BindingResult;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.ModelAttribute;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RestController;
 import raisetech.student.management.controller.converter.StudentConverter;
 import raisetech.student.management.data.Student;
 import raisetech.student.management.data.StudentsCourse;
 import raisetech.student.management.domain.StudentDetail;
 import raisetech.student.management.service.StudentService;
 
-@Controller
+@RestController
 
 public class StudentController {
 
@@ -31,12 +33,10 @@ public class StudentController {
 
 //  各生徒の受講情報の一覧表示
   @GetMapping("/studentList")
-  public String getStudent(Model model) {
+  public List<StudentDetail> getStudent() {
     List<Student> students = service.getStudentList();
     List<StudentsCourse> studentsCourses = service.getStudentCourseList();
-
-    model.addAttribute("studentList", converter.convertStudentDetails(students, studentsCourses));
-    return "studentList";  // テンプレートエンジンのファイル名studentList.htmlを指定
+    return converter.convertStudentDetails(students, studentsCourses);
   }
 
 //  コース情報の一覧表示
@@ -76,15 +76,10 @@ public class StudentController {
   }
 
   //  生徒情報の更新
-//  登録フォームの情報をPOSTで受け取り、生徒一覧画面に遷移
   @PostMapping("/updateStudent")
-  public String updateStudent(@ModelAttribute StudentDetail studentDetail, BindingResult result) {
-    if(result.hasErrors()) {  // 入力チェックでエラーがあった場合の対応
-      return "registerStudent";  // 登録フォームを再表示
-    }
+  public ResponseEntity<String> updateStudent(@RequestBody StudentDetail studentDetail) {
     service.updateStudent(studentDetail);
-    System.out.println(studentDetail.getStudent().getFullName() + "さんの情報が更新されました。");
-    return "redirect:/studentList";  // 一覧画面/studentListに遷移
+    return ResponseEntity.ok(studentDetail.getStudent().getFullName() + "さんの更新処理が成功しました。");
   }
 
 }
