@@ -36,7 +36,7 @@ public class StudentService {
   /**
    *【受講生一覧表示】
    * 全件検索のため、条件指定は行わない。
-   * @return 受講生一覧（全件）
+   * @return 受講生詳細情報一覧（全件）
    */
   public List<StudentDetail> getStudentList() {
     List<Student> studentList = repository.displayStudent();
@@ -48,7 +48,7 @@ public class StudentService {
    * 【受講生検索】
    * IDに紐づく受講生情報を取得し、次いでその受講生に紐づく受講生コース情報を取得して設定。
    * @param studentId 受講生ID
-   * @return 受講生情報
+   * @return 受講生詳細情報
    */
   public StudentDetail searchStudent(String studentId) {
     // 受け取ったstudentIDを元に受講生情報を検索
@@ -62,7 +62,9 @@ public class StudentService {
   /**
    * 【受講生情報の登録】
    * 新規受講生の受講生情報と受講コース情報を登録。
-   * @param studentDetail 入力された受講生詳細情報
+   * StudentIDで2つの情報を紐付け。
+   * attendingID,StartDate,DeadLineは自動設定されます。
+   * @param studentDetail 入力情報（受講生詳細情報）
    * @return 登録された受講生詳細情報
    */
   @Transactional

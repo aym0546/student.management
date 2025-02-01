@@ -6,6 +6,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RestController;
 import raisetech.student.management.domain.StudentDetail;
@@ -64,11 +65,12 @@ public class StudentController {
 
   /**
    * 【受講生更新】
-   * 指定されたIDの受講生情報を更新する。
-   * @param studentDetail 更新される入力情報（受講生情報）
-   * @return 成功時のメッセージ
+   * 指定されたIDの受講生詳細情報を更新する。
+   * キャンセルフラグの更新も行う（論理削除）
+   * @param studentDetail 更新される入力情報（受講生詳細情報）
+   * @return 実行結果
    */
-  @PostMapping("/updateStudent")
+  @PutMapping("/updateStudent")
   public ResponseEntity<String> updateStudent(@RequestBody StudentDetail studentDetail) {
     service.updateStudent(studentDetail);
     return ResponseEntity.ok(studentDetail.getStudent().getFullName() + "さんの更新処理が成功しました。");
