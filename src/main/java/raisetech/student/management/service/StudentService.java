@@ -42,7 +42,7 @@ public class StudentService {
 
 //  受講生情報とコース情報の登録メソッド
   @Transactional
-  public void registerStudent(StudentDetail studentDetail) {
+  public StudentDetail registerStudent(StudentDetail studentDetail) {
     // 受講生情報の登録
     repository.registerStudent(studentDetail.getStudent());
     // コース情報の登録（コースの数だけコース情報を取得する）
@@ -54,6 +54,7 @@ public class StudentService {
       studentsCourse.setDeadline(LocalDateTime.now().plusYears(1));
       repository.registerStudentsCourses(studentsCourse);
     }
+    return studentDetail;
   }
 
 //  受講生情報とコース情報の更新メソッド

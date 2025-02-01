@@ -5,9 +5,7 @@ import java.util.List;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.ui.Model;
-import org.springframework.validation.BindingResult;
 import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.ModelAttribute;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
@@ -37,6 +35,7 @@ public class StudentController {
     List<Student> students = service.getStudentList();
     List<StudentsCourse> studentsCourses = service.getStudentCourseList();
     return converter.convertStudentDetails(students, studentsCourses);
+    // 変換したList<StudentDetail>をそのままJSON形式でレスポンスとして返す
   }
 
 //  コース情報の一覧表示
@@ -56,23 +55,16 @@ public class StudentController {
   }
 
 //  生徒情報の登録②
-//  登録フォームの情報をPOSTで受け取り、生徒一覧画面に遷移
+//  生徒情報をPOSTで受け取り、新規受講生として登録
   @PostMapping("/registerStudent")
-  public String registerStudent(@ModelAttribute StudentDetail studentDetail, BindingResult result) {
-    if(result.hasErrors()) {  // 入力チェックでエラーがあった場合の対応
-      return "registerStudent";  // 登録フォームを再表示
-    }
-    service.registerStudent(studentDetail);
-    System.out.println(studentDetail.getStudent().getFullName() + "さんが新規受講生として登録されました。");
-    return "redirect:/studentList";  // 一覧画面/studentListに飛ぶ
+  public ResponseEntity<StudentDetail> registerStudent(@RequestBody StudentDetail studentDetail) {
+    return ResponseEntity.ok(service.registerStudent(studentDetail));
   }
 
-  //  IDからの検索機能 → 更新画面に飛ぶ
+  //  IDからの検索機能
   @GetMapping("/student/{studentId}") // student_idを元に単一の受講生情報を表示
-  public String getStudent(@PathVariable String studentId, Model model) {
-    StudentDetail studentDetail = service.searchStudent(studentId);
-    model.addAttribute("studentDetail", studentDetail);
-    return "updateStudent"; // 更新画面に遷移
+  public StudentDetail getStudent(@PathVariable String studentId) {
+    return service.searchStudent(studentId);
   }
 
   //  生徒情報の更新
@@ -80,6 +72,7 @@ public class StudentController {
   public ResponseEntity<String> updateStudent(@RequestBody StudentDetail studentDetail) {
     service.updateStudent(studentDetail);
     return ResponseEntity.ok(studentDetail.getStudent().getFullName() + "さんの更新処理が成功しました。");
+    // 更新が完了したらレスポンスとしてOK(200)とメッセージを返す。
   }
 
 }
