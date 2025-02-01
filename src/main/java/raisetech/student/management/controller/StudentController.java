@@ -1,73 +1,73 @@
 package raisetech.student.management.controller;
 
-import java.util.Arrays;
 import java.util.List;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
-import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RestController;
-import raisetech.student.management.controller.converter.StudentConverter;
-import raisetech.student.management.data.Student;
-import raisetech.student.management.data.StudentsCourse;
 import raisetech.student.management.domain.StudentDetail;
 import raisetech.student.management.service.StudentService;
 
+/**
+ * 受講生の検索や登録、更新などを行うREST APIとして受け付けるControllerです。
+ */
 @RestController
 
 public class StudentController {
 
   private final StudentService service;
-  private final StudentConverter converter;
 
+  /**
+   * コンストラクタ
+   * @param service 受講生サービス
+   */
   @Autowired
-  public StudentController(StudentService service, StudentConverter converter) {
+  public StudentController(StudentService service) {
     this.service = service;
-    this.converter = converter;
   }
 
-//  各生徒の受講情報の一覧表示
+  /**
+   * 【受講生一覧表示】
+   * 全件検索のため、条件指定は行わない。
+   * @return 受講生一覧（全件）
+   */
   @GetMapping("/studentList")
   public List<StudentDetail> getStudent() {
-    List<Student> students = service.getStudentList();
-    List<StudentsCourse> studentsCourses = service.getStudentCourseList();
-    return converter.convertStudentDetails(students, studentsCourses);
-    // 変換したList<StudentDetail>をそのままJSON形式でレスポンスとして返す
+    return service.getStudentList();
   }
 
-//  コース情報の一覧表示
-  @GetMapping("/students_courses")
-  public List<StudentsCourse> getCourse() {
-    return service.getStudentCourseList();
-  }
-
-//  生徒情報の登録①
-//  登録フォームregisterStudent.htmlを表示し、新規StudentDetailオブジェクトをフォームに渡す
-  @GetMapping("/newStudent")
-  public String newStudent(Model model) {
-    StudentDetail studentDetail = new StudentDetail();
-    studentDetail.setStudentsCourses(Arrays.asList(new StudentsCourse()));
-    model.addAttribute("studentDetail", studentDetail);
-    return "registerStudent";
-  }
-
-//  生徒情報の登録②
-//  生徒情報をPOSTで受け取り、新規受講生として登録
+  /**
+   * 【受講生登録】
+   * POSTで受け取った情報を元に新規受講生登録を行う。
+   * @param studentDetail 入力情報（受講生情報）
+   * @return 登録された受講生情報（自動生成ID情報を含む）
+   */
   @PostMapping("/registerStudent")
   public ResponseEntity<StudentDetail> registerStudent(@RequestBody StudentDetail studentDetail) {
     return ResponseEntity.ok(service.registerStudent(studentDetail));
+    // 成功時、登録情報をそのまま返す
   }
 
-  //  IDからの検索機能
+  /**
+   * 【受講生検索】
+   * IDに紐づく任意の受講生の情報を取得。
+   * @param studentId 受講生ID
+   * @return 受講生情報
+   */
   @GetMapping("/student/{studentId}") // student_idを元に単一の受講生情報を表示
   public StudentDetail getStudent(@PathVariable String studentId) {
     return service.searchStudent(studentId);
   }
 
-  //  生徒情報の更新
+  /**
+   * 【受講生更新】
+   * 指定されたIDの受講生情報を更新する。
+   * @param studentDetail 更新される入力情報（受講生情報）
+   * @return 成功時のメッセージ
+   */
   @PostMapping("/updateStudent")
   public ResponseEntity<String> updateStudent(@RequestBody StudentDetail studentDetail) {
     service.updateStudent(studentDetail);
