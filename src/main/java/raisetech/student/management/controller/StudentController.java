@@ -1,7 +1,8 @@
 package raisetech.student.management.controller;
 
 import jakarta.validation.Valid;
-import jakarta.validation.constraints.Size;
+import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.Pattern;
 import java.util.List;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
@@ -51,7 +52,7 @@ public class StudentController {
    * @return 登録された受講生情報（自動生成ID情報を含む）
    */
   @PostMapping("/registerStudent")
-  public ResponseEntity<StudentDetail> registerStudent(@RequestBody StudentDetail studentDetail) {
+  public ResponseEntity<StudentDetail> registerStudent(@RequestBody @Valid StudentDetail studentDetail) {
     return ResponseEntity.ok(service.registerStudent(studentDetail));
     // 成功時、登録情報をそのまま返す
   }
@@ -63,7 +64,7 @@ public class StudentController {
    * @return 受講生情報
    */
   @GetMapping("/student/{studentId}") // student_idを元に単一の受講生情報を表示
-  public StudentDetail getStudent(@PathVariable @Size(min = 12, max = 12, message = "STUからはじまる、12桁の受講生IDを入力してください。") String studentId) {
+  public StudentDetail getStudent(@PathVariable @NotBlank @Pattern(regexp = "^STU\\d{9}$", message = "STUからはじまる、12桁の受講生IDを入力してください。") String studentId) {
     return service.searchStudent(studentId);
   }
 

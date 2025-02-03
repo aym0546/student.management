@@ -17,7 +17,7 @@
     SELECT * FROM students WHERE student_id = #{studentId}
   </select>
 
-  <!-- コース情報検索 TODO:続きもjavaから移行する！ -->
+  <!-- コース情報検索 -->
   <select id="searchStudentsCourses" resultType="raisetech.student.management.data.StudentsCourse">
     SELECT * FROM students_courses WHERE student_id = #{studentId}
   </select>
