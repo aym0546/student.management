@@ -70,9 +70,10 @@ public class StudentController {
 
   /**
    * 【受講生更新】
-   * 指定されたIDの受講生情報を更新する。
-   * @param studentDetail 更新される入力情報（受講生情報）
-   * @return 成功時のメッセージ
+   * 指定されたIDの受講生詳細情報を更新する。
+   * キャンセルフラグの更新も行う（論理削除）
+   * @param studentDetail 更新される入力情報（受講生詳細情報）
+   * @return 実行結果
    */
   @PutMapping("/updateStudent")
   public ResponseEntity<String> updateStudent(@RequestBody @Valid StudentDetail studentDetail) {
