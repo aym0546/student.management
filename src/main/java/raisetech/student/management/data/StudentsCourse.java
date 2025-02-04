@@ -2,10 +2,12 @@ package raisetech.student.management.data;
 
 import io.swagger.v3.oas.annotations.media.Schema;
 import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Pattern;
 import java.time.LocalDateTime;
 import lombok.Getter;
 import lombok.Setter;
+import org.apache.ibatis.annotations.Update;
 
 @Schema(description = "受講コース情報")
 @Getter
@@ -13,6 +15,7 @@ import lombok.Setter;
 public class StudentsCourse {
 
   @Schema(description = "受講コースID", example = "19")
+  @NotNull(groups = Update.class, message = "更新時には受講コースIDが必須です。")
   private Long attendingId;
 
   @Schema(description = "受講生ID", example = "STU000000021")
@@ -21,6 +24,10 @@ public class StudentsCourse {
 
   @Schema(description = "受講コース名", example = "Javaコース")
   @NotBlank
+  @Pattern(
+      regexp = "Javaコース|AWSコース|WordPressコース|デザインコース|webマーケティングコース|映像制作コース|フロントエンドコース",
+      message = "Javaコース|AWSコース|WordPressコース|デザインコース|webマーケティングコース|映像制作コース|フロントエンドコース のいずれかを入力してください。"
+  )
   private String course;
 
   @Schema(description = "コース受講開始日", example = "2025-01-01")

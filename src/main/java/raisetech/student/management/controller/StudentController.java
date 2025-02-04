@@ -8,7 +8,9 @@ import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.Pattern;
+import jakarta.validation.groups.Default;
 import java.util.List;
+import org.apache.ibatis.annotations.Update;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.validation.annotation.Validated;
@@ -61,7 +63,8 @@ public class StudentController {
   @Operation(summary = "受講生登録", description = "新規受講生の詳細情報を登録します。")
   @ApiResponses(value = {
       @ApiResponse(responseCode = "200", description = "成功"),
-      @ApiResponse(responseCode = "500", description = "更新処理に失敗しました")
+      @ApiResponse(responseCode = "400", description = "更新処理に失敗しました"),
+      @ApiResponse(responseCode = "500", description = "サーバーエラー")
   })
   @PostMapping("/registerStudent")
   public ResponseEntity<StudentDetail> registerStudent(
@@ -79,12 +82,13 @@ public class StudentController {
   @Operation(summary = "受講生検索", description = "指定された受講生IDから情報を取得します。")
   @ApiResponses(value = {
       @ApiResponse(responseCode = "200", description = "成功"),
-      @ApiResponse(responseCode = "500", description = "IDに該当する受講生が見つかりません")
+      @ApiResponse(responseCode = "400", description = "該当する受講生が見つかりません"),
+      @ApiResponse(responseCode = "500", description = "サーバーエラー")
   })
   @GetMapping("/student/{studentId}")
   public StudentDetail getStudent(
       @Parameter(description = "検索する受講生のID", example = "STU000000001")
-      @PathVariable @NotBlank @Pattern(regexp = "^STU\\d{9}$", message = "STUからはじまる、12桁の受講生IDを入力してください。") String studentId) {
+      @PathVariable @NotBlank @Valid @Pattern(regexp = "^STU\\d{9}$", message = "STUからはじまる、12桁の受講生IDを入力してください。") String studentId) {
     return service.searchStudent(studentId);
   }
 
@@ -98,10 +102,11 @@ public class StudentController {
   @Operation(summary = "受講生更新", description = "指定IDの受講生詳細情報を更新します。")
   @ApiResponses(value = {
       @ApiResponse(responseCode = "200", description = "成功"),
-      @ApiResponse(responseCode = "500", description = "更新処理に失敗しました")
+      @ApiResponse(responseCode = "400", description = "更新処理に失敗しました"),
+      @ApiResponse(responseCode = "500", description = "サーバーエラー")
   })
   @PutMapping("/updateStudent")
-  public ResponseEntity<String> updateStudent(@RequestBody @Valid StudentDetail studentDetail) {
+  public ResponseEntity<String> updateStudent(@RequestBody @Validated({Default.class, Update.class}) StudentDetail studentDetail) {
     service.updateStudent(studentDetail);
     return ResponseEntity.ok(studentDetail.getStudent().getFullName() + "さんの更新処理が成功しました。");
     // 更新が完了したらレスポンスとしてOK(200)とメッセージを返す。
