@@ -1,9 +1,9 @@
 package raisetech.student.management.exception;
 
-import jakarta.validation.ConstraintViolation;
-import jakarta.validation.ConstraintViolationException;
+import jakarta.servlet.http.HttpServletRequest;
 import java.util.HashMap;
 import java.util.Map;
+import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.validation.FieldError;
@@ -35,19 +35,28 @@ public class GlobalExceptionHandler {
   }
 
   // 制約違反エラー
-  @ExceptionHandler(ConstraintViolationException.class)
-  public ResponseEntity<Map<String, String>> handleConstraintViolationsExceptions(ConstraintViolationException ex) {
-    Map<String, String> errors = new HashMap<>();
-    for (ConstraintViolation<?> constraintViolation : ex.getConstraintViolations()) {
-      errors.put(constraintViolation.getPropertyPath().toString(),  // エラー元のフィールドpropertyを取得
-          constraintViolation.getMessage());
-    }
-    return new ResponseEntity<>(errors, HttpStatus.BAD_REQUEST);
+  @ExceptionHandler(DataIntegrityViolationException.class)
+  public ResponseEntity<Map<String, String>> handleDataIntegrityViolationException(DataIntegrityViolationException ex) {
+    Map<String, String> error = new HashMap<>();
+    error.put("message", "データの制約違反です。入力データを確認してください。");
+    error.put("error", ex.getCause().getMessage());
+    return new ResponseEntity<>(error, HttpStatus.INTERNAL_SERVER_ERROR);
   }
+
+  // 検索不一致
+  @ExceptionHandler(NullPointerException.class)
+  public ResponseEntity<Map<String, Object>> handleNullPointerException(NullPointerException ex, HttpServletRequest req) {
+    Map<String, Object> errors = new HashMap<>();
+    errors.put("status", HttpStatus.BAD_REQUEST.value());
+    errors.put("path", req.getRequestURI());
+    errors.put("message", "該当するデータが見つかりません。");
+    return new ResponseEntity<>(errors, HttpStatus.BAD_REQUEST);
+   }
 
   // その他の例外
   @ExceptionHandler(Exception.class)
   public ResponseEntity<String> handleOtherException(Exception ex){
-    return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("サーバーエラーが発生しました。：" + ex.getMessage());
+    return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+        .body("サーバーエラーが発生しました。：" + ex.getMessage());
   }
 }

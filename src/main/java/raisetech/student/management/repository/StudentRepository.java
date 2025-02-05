@@ -61,7 +61,7 @@ public interface StudentRepository {
    * 特定の受講生IDの受講生情報を、入力情報を元に更新。
    * @param updateStudent 更新内容（受講生情報）
    */
-  void updateStudent(Student updateStudent);
+  int updateStudent(Student updateStudent);
 
   /**
    * 【コース情報の更新】
@@ -69,6 +69,6 @@ public interface StudentRepository {
    * 実際に変更可能なのはコース名のみ（その他は自動設定のため）
    * @param updateCourse 更新内容（コース情報）
    */
-  void updateStudentsCourses(StudentsCourse updateCourse);
+  int updateStudentsCourses(StudentsCourse updateCourse);
 
 }

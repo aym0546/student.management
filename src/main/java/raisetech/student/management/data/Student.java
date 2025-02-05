@@ -17,7 +17,7 @@ public class Student {
 
   @Schema(description = "受講生ID", example = "STU000000001")
   @NotBlank
-  @Pattern(regexp = "^STU\\d{9}$")
+  @Pattern(regexp = "^STU\\d{9}$", message = "STUからはじまる12文字のIDを入力してください。")
   private String studentId;
 
   @Schema(description = "受講生氏名", example = "山田 太郎")

@@ -92,13 +92,19 @@ public class StudentService {
   public void updateStudent(StudentDetail studentDetail) {
     // ここに遷移した時点で既に特定のstudentIdのstudentDetailが呼び出されている
     // 受講生情報の更新
-    repository.updateStudent(studentDetail.getStudent());
+    int updatedStudentData = repository.updateStudent(studentDetail.getStudent());
     // コース情報の更新
+    int updatedStudentsCourseData = 0;
     for(StudentsCourse studentsCourse : studentDetail.getStudentsCourses()) {
       // studentDetailに含まれるStudentCoursesを一つづつ取り出して処理
       // ↓ studentsCourseにはデータベースから取得した時点でattending_idが設定済みであるため、自動的にattending_idは@Updateに渡される
-      repository.updateStudentsCourses(studentsCourse);
+      updatedStudentsCourseData += repository.updateStudentsCourses(studentsCourse);
     }
+    // 更新されたデータが0の場合に例外をスルー
+    if (updatedStudentData == 0 && updatedStudentsCourseData == 0) {
+      throw new NullPointerException();
+    }
+
   }
 
 }
