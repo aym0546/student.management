@@ -50,7 +50,7 @@ public class StudentService {
    * @param studentId 受講生ID
    * @return 受講生詳細情報
    */
-  public StudentDetail searchStudent(String studentId) {
+  public StudentDetail searchStudent(Integer studentId) {
     // 受け取ったstudentIDを元に受講生情報を検索
     Student student = repository.searchStudent(studentId);
     // 受講生情報のstudentIDに基づいてコース情報を検索
@@ -70,15 +70,22 @@ public class StudentService {
   @Transactional
   public StudentDetail registerStudent(StudentDetail studentDetail) {
     // 受講生情報の登録
-    repository.registerStudent(studentDetail.getStudent());
+    int registeredStudent = repository.registerStudent(studentDetail.getStudent());
+    if (registeredStudent == 0) {
+      throw new RuntimeException("受講生の登録に失敗しました。");
+    }
     // コース情報の登録（コースの数だけコース情報を取得する）
+    int registeredCourse = 0;
     for(StudentsCourse studentsCourse : studentDetail.getStudentsCourses()) {
       // student_idは↑で登録したstudent_idを流用
       studentsCourse.setStudentId(studentDetail.getStudent().getStudentId());
       // start_dateとdeadlineは現在日時とその１年後を取得
       studentsCourse.setStartDate(LocalDateTime.now());
       studentsCourse.setDeadline(LocalDateTime.now().plusYears(1));
-      repository.registerStudentsCourses(studentsCourse);
+      registeredCourse += repository.registerStudentsCourses(studentsCourse);
+    }
+    if (registeredCourse == 0) {
+      throw new RuntimeException("受講コース情報の登録に失敗しました。");
     }
     return studentDetail;
   }

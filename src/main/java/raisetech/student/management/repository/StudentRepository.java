@@ -31,7 +31,7 @@ public interface StudentRepository {
    * @param studentId 受講生ID
    * @return 受講生情報
    */
-  Student searchStudent(String studentId);
+  Student searchStudent(Integer studentId);
 
   /**
    * 【コース情報検索】
@@ -39,14 +39,14 @@ public interface StudentRepository {
    * @param studentId 受講生ID
    * @return 受講生IDに紐づくコース情報
    */
-  List<StudentsCourse> searchStudentsCourses(String studentId);
+  List<StudentsCourse> searchStudentsCourses(Integer studentId);
 
   /**
    * 【受講生情報の登録】
    * 入力情報を元に、新規受講生を登録。
    * @param registerStudent 登録情報（受講生情報)
    */
-  void registerStudent(Student registerStudent);
+  int registerStudent(Student registerStudent);
 
   /**
    * 【コース情報の登録】
@@ -54,7 +54,7 @@ public interface StudentRepository {
    * 受講ID（attendingID）は自動生成される。
    * @param studentsCourse 登録内容（コース情報）
    */
-  void registerStudentsCourses(StudentsCourse studentsCourse);
+  int registerStudentsCourses(StudentsCourse studentsCourse);
 
   /**
    * 【受講生情報の更新】

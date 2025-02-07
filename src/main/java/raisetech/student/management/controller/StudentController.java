@@ -6,8 +6,6 @@ import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
-import jakarta.validation.constraints.NotBlank;
-import jakarta.validation.constraints.Pattern;
 import jakarta.validation.groups.Default;
 import java.util.List;
 import org.apache.ibatis.annotations.Update;
@@ -87,8 +85,8 @@ public class StudentController {
   })
   @GetMapping("/student/{studentId}")
   public StudentDetail getStudent(
-      @Parameter(description = "検索する受講生のID", example = "STU000000001")
-      @PathVariable @NotBlank @Valid @Pattern(regexp = "^STU\\d{9}$", message = "STUからはじまる、12桁の受講生IDを入力してください。") String studentId) {
+      @Parameter(description = "検索する受講生のID", example = "12")
+      @PathVariable @Valid Integer studentId) {
     return service.searchStudent(studentId);
   }
 

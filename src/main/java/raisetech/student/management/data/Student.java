@@ -5,6 +5,7 @@ import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Pattern;
+import jakarta.validation.constraints.Positive;
 import lombok.Getter;
 import lombok.Setter;
 import org.hibernate.validator.constraints.Length;
@@ -15,10 +16,9 @@ import org.hibernate.validator.constraints.Range;
 @Setter
 public class Student {
 
-  @Schema(description = "受講生ID", example = "STU000000001")
-  @NotBlank
-  @Pattern(regexp = "^STU\\d{9}$", message = "STUからはじまる12文字のIDを入力してください。")
-  private String studentId;
+  @Schema(description = "受講生ID", example = "12")
+  @Positive
+  private Integer studentId;
 
   @Schema(description = "受講生氏名", example = "山田 太郎")
   @NotBlank
