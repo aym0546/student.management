@@ -1,5 +1,6 @@
 package raisetech.student.management.service;
 
+import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.mockito.Mockito.times;
@@ -137,8 +138,10 @@ class StudentServiceTest {
     updateStudentDetail.setStudent(updateStudent);
     List<StudentsCourse> updateStudentsCourses = new ArrayList<>();
     StudentsCourse courseA = new StudentsCourse();
+    courseA.setAttendingId(1L);
     courseA.setStudentId(studentId);
     StudentsCourse courseB = new StudentsCourse();
+    courseB.setAttendingId(2L);
     courseB.setStudentId(studentId);
     updateStudentsCourses.add(courseA);
     updateStudentsCourses.add(courseB);
@@ -151,8 +154,10 @@ class StudentServiceTest {
     List<StudentsCourse> existedStudentsCourses = new ArrayList<>();
     StudentsCourse existedStudentsCourseA = new StudentsCourse();
     existedStudentsCourseA.setAttendingId(1L);
+    existedStudentsCourseA.setStudentId(studentId);
     StudentsCourse existedStudentsCourseB = new StudentsCourse();
     existedStudentsCourseB.setAttendingId(2L);
+    existedStudentsCourseB.setStudentId(studentId);
     existedStudentsCourses.add(existedStudentsCourseA);
     existedStudentsCourses.add(existedStudentsCourseB);
     existedStudentDetail.setStudent(existedStudent);
@@ -171,6 +176,14 @@ class StudentServiceTest {
     Mockito.verify(repository, times(1)).updateStudent(updateStudent);
     Mockito.verify(repository, times(updateStudentsCourses.size()))
         .updateStudentsCourses(Mockito.any(StudentsCourse.class));
+
+    assertThat(updateStudentDetail.getStudent())
+        .usingRecursiveComparison()
+        .isEqualTo(existedStudentDetail.getStudent());
+    assertThat(updateStudentDetail.getStudentsCourses())
+        .usingRecursiveComparison()
+        .ignoringFields("startDate", "DeadLine")
+        .isEqualTo(existedStudentDetail.getStudentsCourses());
 
   }
 }
