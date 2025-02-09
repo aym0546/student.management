@@ -9,6 +9,8 @@ import raisetech.student.management.controller.converter.StudentConverter;
 import raisetech.student.management.data.Student;
 import raisetech.student.management.data.StudentsCourse;
 import raisetech.student.management.domain.StudentDetail;
+import raisetech.student.management.exception.NoDataException;
+import raisetech.student.management.exception.ProcessFailedException;
 import raisetech.student.management.repository.StudentRepository;
 
 /**
@@ -50,7 +52,7 @@ public class StudentService {
    * @param studentId 受講生ID
    * @return 受講生詳細情報
    */
-  public StudentDetail searchStudent(String studentId) {
+  public StudentDetail searchStudent(Integer studentId) {
     // 受け取ったstudentIDを元に受講生情報を検索
     Student student = repository.searchStudent(studentId);
     // 受講生情報のstudentIDに基づいてコース情報を検索
@@ -70,15 +72,22 @@ public class StudentService {
   @Transactional
   public StudentDetail registerStudent(StudentDetail studentDetail) {
     // 受講生情報の登録
-    repository.registerStudent(studentDetail.getStudent());
+    int registeredStudent = repository.registerStudent(studentDetail.getStudent());
+    if (registeredStudent == 0) {
+      throw new ProcessFailedException("受講生の登録に失敗しました。");
+    }
     // コース情報の登録（コースの数だけコース情報を取得する）
+    int registeredCourse = 0;
     for(StudentsCourse studentsCourse : studentDetail.getStudentsCourses()) {
       // student_idは↑で登録したstudent_idを流用
       studentsCourse.setStudentId(studentDetail.getStudent().getStudentId());
       // start_dateとdeadlineは現在日時とその１年後を取得
       studentsCourse.setStartDate(LocalDateTime.now());
       studentsCourse.setDeadline(LocalDateTime.now().plusYears(1));
-      repository.registerStudentsCourses(studentsCourse);
+      registeredCourse += repository.registerStudentsCourses(studentsCourse);
+    }
+    if (registeredCourse == 0) {
+      throw new ProcessFailedException("受講コース情報の登録に失敗しました。");
     }
     return studentDetail;
   }
@@ -91,14 +100,38 @@ public class StudentService {
   @Transactional
   public void updateStudent(StudentDetail studentDetail) {
     // ここに遷移した時点で既に特定のstudentIdのstudentDetailが呼び出されている
-    // 受講生情報の更新
-    repository.updateStudent(studentDetail.getStudent());
-    // コース情報の更新
-    for(StudentsCourse studentsCourse : studentDetail.getStudentsCourses()) {
-      // studentDetailに含まれるStudentCoursesを一つづつ取り出して処理
-      // ↓ studentsCourseにはデータベースから取得した時点でattending_idが設定済みであるため、自動的にattending_idは@Updateに渡される
-      repository.updateStudentsCourses(studentsCourse);
+
+    // 事前に対象の受講生情報を検索（なければ例外throw）
+    Integer targetStudentId = studentDetail.getStudent().getStudentId();
+    Student studentExist = repository.searchStudent(targetStudentId);
+    if (studentExist == null) {
+      throw new NoDataException("更新対象の受講生情報が見つかりません。[ID: " + targetStudentId + " ]");
     }
+
+    // 事前に対象の受講生のコース情報リストを取得
+    List<StudentsCourse> courseExist = repository.searchStudentsCourses(targetStudentId);
+    if (courseExist.isEmpty()) {
+      throw new NoDataException("更新対象のコース受講情報が見つかりません。[ID: " + targetStudentId + " ]");
+    }
+
+    // 受講生情報の更新
+    int updatedStudentData = repository.updateStudent(studentDetail.getStudent());
+    // コース情報の更新
+    int updatedStudentsCourseData = 0;
+    // studentDetailに含まれるStudentCoursesを一つづつ取り出して処理
+    for(StudentsCourse studentsCourse : studentDetail.getStudentsCourses()) {
+      // ↓ studentsCourseにはデータベースから取得した時点でattending_idが設定済みであるため、自動的にattending_idは@Updateに渡される
+      int updateData = repository.updateStudentsCourses(studentsCourse);
+      if (updateData > 0) {
+        updatedStudentsCourseData += updateData;
+      }
+    }
+
+    // 更新されたデータが0の場合に例外をスルー
+    if (updatedStudentData == 0 && updatedStudentsCourseData == 0) {
+      throw new ProcessFailedException("受講生情報・コース受講情報いずれも更新されませんでした。");
+    }
+
   }
 
 }

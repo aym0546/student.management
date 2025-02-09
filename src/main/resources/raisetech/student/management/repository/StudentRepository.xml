@@ -23,13 +23,15 @@
   </select>
 
   <!-- 受講生情報の登録 -->
-  <insert id="registerStudent">
-    INSERT INTO students(student_id, full_name, name_pronunciation, nickname, email, area, age, gender, remark, is_deleted) VALUES (#{studentId}, #{fullName}, #{namePronunciation}, #{nickname}, #{email}, #{area}, #{age}, #{gender}, #{remark}, false)
+  <insert id="registerStudent" useGeneratedKeys="true" keyProperty="studentId">
+    INSERT INTO students(full_name, name_pronunciation, nickname, email, area, age, gender, remark, is_deleted)
+    VALUES (#{fullName}, #{namePronunciation}, #{nickname}, #{email}, #{area}, #{age}, #{gender}, #{remark}, false)
   </insert>
 
   <!-- コース情報の登録 -->
   <insert id="registerStudentsCourses" useGeneratedKeys="true" keyProperty="attendingId">
-    INSERT INTO students_courses(student_id, course, start_date, deadline) VALUES (#{studentId}, #{course}, #{startDate}, #{deadline})
+    INSERT INTO students_courses(student_id, course, start_date, deadline)
+    VALUES (#{studentId}, #{course}, #{startDate}, #{deadline})
   </insert>
 
   <!-- 受講生情報の更新 -->
