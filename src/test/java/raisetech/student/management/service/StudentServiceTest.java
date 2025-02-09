@@ -150,7 +150,9 @@ class StudentServiceTest {
     existedStudent.setStudentId(studentId);
     List<StudentsCourse> existedStudentsCourses = new ArrayList<>();
     StudentsCourse existedStudentsCourseA = new StudentsCourse();
+    existedStudentsCourseA.setAttendingId(1L);
     StudentsCourse existedStudentsCourseB = new StudentsCourse();
+    existedStudentsCourseB.setAttendingId(2L);
     existedStudentsCourses.add(existedStudentsCourseA);
     existedStudentsCourses.add(existedStudentsCourseB);
     existedStudentDetail.setStudent(existedStudent);
