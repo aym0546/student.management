@@ -7,6 +7,7 @@ import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Pattern;
 import jakarta.validation.constraints.Positive;
 import lombok.Getter;
+import lombok.NoArgsConstructor;
 import lombok.Setter;
 import org.hibernate.validator.constraints.Length;
 import org.hibernate.validator.constraints.Range;
@@ -14,6 +15,7 @@ import org.hibernate.validator.constraints.Range;
 @Schema(description = "受講生情報")
 @Getter
 @Setter
+@NoArgsConstructor
 public class Student {
 
   @Schema(description = "受講生ID", example = "12")
@@ -61,4 +63,17 @@ public class Student {
 
   @Schema(description = "キャンセルフラグ")
   private boolean isDeleted;
+
+  public Student(Integer studentId, String fullName, String namePronunciation, String nickname,
+      String email, String area, short age, String gender, String remark) {
+    this.studentId = studentId;
+    this.fullName = fullName;
+    this.namePronunciation = namePronunciation;
+    this.nickname = nickname;
+    this.email = email;
+    this.area = area;
+    this.age = age;
+    this.gender = gender;
+    this.remark = remark;
+  }
 }

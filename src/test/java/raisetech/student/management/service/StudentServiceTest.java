@@ -3,15 +3,18 @@ package raisetech.student.management.service;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.mockito.Mockito.any;
 import static org.mockito.Mockito.times;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.when;
 
+import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.Mock;
-import org.mockito.Mockito;
 import org.mockito.junit.jupiter.MockitoExtension;
 import raisetech.student.management.controller.converter.StudentConverter;
 import raisetech.student.management.data.Student;
@@ -30,9 +33,25 @@ class StudentServiceTest {
 
   private StudentService sut;
 
+  private int studentId;
+  private Student student;
+  private List<StudentsCourse> baseCourses;
+  private StudentDetail baseStudentDetail;
+
   @BeforeEach
   void before() {
     sut = new StudentService(repository, converter);
+
+    studentId = 1;
+    student = new Student(
+        studentId, "ベース テスト", "べーす てすと",
+        "ベース", "base@email.com", "",
+        (short) 20, "Other", "");
+    baseCourses = List.of(
+        new StudentsCourse(1L, studentId, "Javaコース", LocalDateTime.now(), LocalDateTime.now().plusYears(1)),
+        new StudentsCourse(2L, studentId, "AWSコース", LocalDateTime.now(), LocalDateTime.now().plusYears(1))
+    );
+    baseStudentDetail = new StudentDetail(student, baseCourses);
   }
 
   @Test
@@ -44,17 +63,17 @@ class StudentServiceTest {
     // expectedを用意
     List<StudentDetail> expected = new ArrayList<>();
     // whenのメソッドを呼び出した場合に、thenReturnを返すようMockを設定
-    Mockito.when(repository.displayStudent()).thenReturn(studentList);
-    Mockito.when(repository.displayCourse()).thenReturn(studentCourseList);
-    Mockito.when(converter.convertStudentDetails(studentList, studentCourseList)).thenReturn(expected);
+    when(repository.displayStudent()).thenReturn(studentList);
+    when(repository.displayCourse()).thenReturn(studentCourseList);
+    when(converter.convertStudentDetails(studentList, studentCourseList)).thenReturn(expected);
 
     // 実行
     List<StudentDetail> actual = sut.getStudentList();
 
     // 検証
-    Mockito.verify(repository, times(1)).displayStudent();
-    Mockito.verify(repository, times(1)).displayCourse();
-    Mockito.verify(converter, times(1)).convertStudentDetails(studentList, studentCourseList);
+    verify(repository, times(1)).displayStudent();
+    verify(repository, times(1)).displayCourse();
+    verify(converter, times(1)).convertStudentDetails(studentList, studentCourseList);
 
     // アサーション
     assertNotNull(actual);  // nullでないことを確認
@@ -62,128 +81,87 @@ class StudentServiceTest {
   }
 
   @Test
-  void 受講生詳細情報の検索機能() {
-    // 事前準備
-    Integer studentId = 1;  // 適当なstudentIdを設定
-    Student student = new Student();
-    student.setStudentId(studentId);  // studentにstudentIdを設定
-    List<StudentsCourse> studentCourseList = new ArrayList<>();
-
+  void 受講生詳細情報の検索機能が動作していること() {
     // Mock設定
-    Mockito.when(repository.searchStudent(studentId)).thenReturn(student);
-    Mockito.when(repository.searchStudentsCourses(student.getStudentId())).thenReturn(studentCourseList);
+    when(repository.searchStudent(studentId)).thenReturn(student);
+    when(repository.searchStudentsCourses(studentId)).thenReturn(baseCourses);
 
     // 実行
     StudentDetail actual = sut.searchStudent(studentId);
 
     // 検証
-    Mockito.verify(repository, times(1)).searchStudent(studentId);
-    Mockito.verify(repository, times(1)).searchStudentsCourses(student.getStudentId());
+    verify(repository, times(1)).searchStudent(studentId);
+    verify(repository, times(1)).searchStudentsCourses(studentId);
 
-    // 結果のアサーション
     assertNotNull(actual);
     assertEquals(student, actual.getStudent());
-    assertEquals(studentCourseList, actual.getStudentsCourses());
+    assertEquals(baseCourses, actual.getStudentsCourses());
   }
 
   @Test
   void 受講生情報の登録機能が動作していること() {
-    // 事前準備
-    StudentDetail studentDetail = new StudentDetail();
-    Student student = new Student();
-    student.setStudentId(1);
-
-    List<StudentsCourse> studentCourseList = new ArrayList<>();
-    StudentsCourse courseA = new StudentsCourse();
-    StudentsCourse courseB = new StudentsCourse();
-    studentCourseList.add(courseA);
-    studentCourseList.add(courseB);
-
-    studentDetail.setStudent(student);
-    studentDetail.setStudentsCourses(studentCourseList);
-
     // Mock設定
-    Mockito.when(repository.registerStudent(student)).thenReturn(1);
-    Mockito.when(repository.registerStudentsCourses(Mockito.any(StudentsCourse.class))).thenReturn(1);
+    when(repository.registerStudent(student)).thenReturn(1);
+    when(repository.registerStudentsCourses(any(StudentsCourse.class))).thenReturn(1);
       // Mockito.any()：どんなStudentsCourseが引数でもthenReturn(1)が適用される
 
     // 実行
-    StudentDetail actual = sut.registerStudent(studentDetail);
+    StudentDetail actual = sut.registerStudent(baseStudentDetail);
 
     // 検証
-    Mockito.verify(repository, times(1)).registerStudent(studentDetail.getStudent());
-    Mockito.verify(repository, times(studentCourseList.size())).registerStudentsCourses(Mockito.any(StudentsCourse.class));
+    verify(repository, times(1)).registerStudent(student);
+    verify(repository, times(baseCourses.size())).registerStudentsCourses(any(StudentsCourse.class));
 
     assertNotNull(actual);
     assertEquals(student, actual.getStudent());
-    assertEquals(studentCourseList.size(), actual.getStudentsCourses().size());
-    // コース情報を確認
-    for (StudentsCourse actualCourse : actual.getStudentsCourses()) {
-      // studentId
-      assertEquals(student.getStudentId(), actualCourse.getStudentId());
-      // startDate, deadline
-      assertNotNull(actualCourse.getStartDate());
-      assertNotNull(actualCourse.getDeadline());
-    }
+    assertEquals(baseCourses, actual.getStudentsCourses());
   }
 
   @Test
   void 受講生情報の更新機能が動作していること() {
     // 事前準備
     // 更新情報 updateStudentDetail
-    Integer studentId = 1;
-    StudentDetail updateStudentDetail = new StudentDetail();
-    Student updateStudent = new Student();
-    updateStudent.setStudentId(studentId);
-    updateStudentDetail.setStudent(updateStudent);
-    List<StudentsCourse> updateStudentsCourses = new ArrayList<>();
-    StudentsCourse courseA = new StudentsCourse();
-    courseA.setAttendingId(1L);
-    courseA.setStudentId(studentId);
-    StudentsCourse courseB = new StudentsCourse();
-    courseB.setAttendingId(2L);
-    courseB.setStudentId(studentId);
-    updateStudentsCourses.add(courseA);
-    updateStudentsCourses.add(courseB);
-    updateStudentDetail.setStudentsCourses(updateStudentsCourses);
+    var updateStudent = new Student(
+        studentId, "更新 テスト", "こうしん てすと",
+        "てっくん", "update@email.com", "更新後",
+        (short) 20, "Other", "");
+    var updateCourses = List.of(
+        new StudentsCourse(1L, studentId, "Javaコース", LocalDateTime.now(), LocalDateTime.now().plusYears(1)),
+        new StudentsCourse(2L, studentId, "AWSコース", LocalDateTime.now(), LocalDateTime.now().plusYears(1))
+    );
+    var updateStudentDetail = new StudentDetail(updateStudent, updateCourses);
 
     // 更新対象 existedStudentDetail
-    StudentDetail existedStudentDetail = new StudentDetail();
-    Student existedStudent = new Student();
-    existedStudent.setStudentId(studentId);
-    List<StudentsCourse> existedStudentsCourses = new ArrayList<>();
-    StudentsCourse existedStudentsCourseA = new StudentsCourse();
-    existedStudentsCourseA.setAttendingId(1L);
-    existedStudentsCourseA.setStudentId(studentId);
-    StudentsCourse existedStudentsCourseB = new StudentsCourse();
-    existedStudentsCourseB.setAttendingId(2L);
-    existedStudentsCourseB.setStudentId(studentId);
-    existedStudentsCourses.add(existedStudentsCourseA);
-    existedStudentsCourses.add(existedStudentsCourseB);
-    existedStudentDetail.setStudent(existedStudent);
-    existedStudentDetail.setStudentsCourses(existedStudentsCourses);
+    var existedStudent = new Student(
+        studentId, "オリジナル テスト", "おりじなる てすと",
+        "てっくん", "existed@email.com", "更新前",
+        (short) 20, "Other", "");
+    var existedStudentsCourses = List.of(
+        new StudentsCourse(1L, studentId, "Javaコース", LocalDateTime.now(), LocalDateTime.now().plusYears(1)),
+        new StudentsCourse(2L, studentId, "AWSコース", LocalDateTime.now(), LocalDateTime.now().plusYears(1))
+    );
+    var existedStudentDetail = new StudentDetail(existedStudent, existedStudentsCourses);
 
     // Mock設定
-    Mockito.when(repository.searchStudent(studentId)).thenReturn(existedStudent);  // studentId -> existedStudent
-    Mockito.when(repository.searchStudentsCourses(studentId)).thenReturn(existedStudentsCourses);  // studentId -> existedStudentsCourses
-    Mockito.when(repository.updateStudent(updateStudent)).thenReturn(1);  // updateStudent -> 1
-    Mockito.when(repository.updateStudentsCourses(Mockito.any(StudentsCourse.class))).thenReturn(1);  // updateStudentsCourses(any) -> 1
+    when(repository.searchStudent(studentId)).thenReturn(updateStudent);  // studentId(1) -> updateStudent
+    when(repository.searchStudentsCourses(studentId)).thenReturn(updateCourses);  // studentId(1) -> updateCourses
+    when(repository.updateStudent(updateStudent)).thenReturn(1);  // updateStudent -> 更新が成功する
+    when(repository.updateStudentsCourses(any(StudentsCourse.class))).thenReturn(1);  // any() -> 更新が成功する
 
     // 実行
     sut.updateStudent(updateStudentDetail);
+    StudentDetail actual = sut.searchStudent(studentId);  // 実測値
 
     // 検証
-    Mockito.verify(repository, times(1)).updateStudent(updateStudent);
-    Mockito.verify(repository, times(updateStudentsCourses.size()))
-        .updateStudentsCourses(Mockito.any(StudentsCourse.class));
-
-    assertThat(updateStudentDetail.getStudent())
+    // メソッド呼び出し確認
+    verify(repository, times(1)).updateStudent(updateStudent);
+    verify(repository, times(updateCourses.size()))
+        .updateStudentsCourses(any(StudentsCourse.class));
+    // 更新前後の比較（結果が行進情報と一致/結果が更新対象と不一致）
+    assertThat(actual)
         .usingRecursiveComparison()
-        .isEqualTo(existedStudentDetail.getStudent());
-    assertThat(updateStudentDetail.getStudentsCourses())
-        .usingRecursiveComparison()
-        .ignoringFields("startDate", "DeadLine")
-        .isEqualTo(existedStudentDetail.getStudentsCourses());
-
+        .ignoringFields("studentsCourses.startDate", "studentsCourses.deadLine")
+        .isEqualTo(updateStudentDetail)  // 期待値との比較
+        .isNotEqualTo(existedStudentDetail);
   }
 }

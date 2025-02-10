@@ -6,13 +6,17 @@ import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Pattern;
 import jakarta.validation.constraints.Positive;
 import java.time.LocalDateTime;
+import lombok.AllArgsConstructor;
 import lombok.Getter;
+import lombok.NoArgsConstructor;
 import lombok.Setter;
 import org.apache.ibatis.annotations.Update;
 
 @Schema(description = "受講コース情報")
 @Getter
 @Setter
+@NoArgsConstructor
+@AllArgsConstructor
 public class StudentsCourse {
 
   @Schema(description = "受講コースID", example = "19")
