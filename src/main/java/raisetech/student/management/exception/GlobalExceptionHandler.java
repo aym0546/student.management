@@ -104,7 +104,13 @@ public class GlobalExceptionHandler {
     errors.put("path", req.getRequestURI());
     errors.put("message", "該当するデータが見つかりません。");
     return new ResponseEntity<>(errors, HttpStatus.BAD_REQUEST);
-   }
+  }
+
+  // 受講生情報が確認できない
+  @ExceptionHandler(NoDataException.class)
+  public ResponseEntity<String> handleNoDataException(NoDataException ex) {
+    return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(ex.getMessage());
+  }
 
   // その他の例外
   @ExceptionHandler(Exception.class)

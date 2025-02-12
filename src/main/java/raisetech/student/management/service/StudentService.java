@@ -2,6 +2,7 @@ package raisetech.student.management.service;
 
 import java.time.LocalDateTime;
 import java.util.List;
+import java.util.Objects;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -56,7 +57,7 @@ public class StudentService {
     // 受け取ったstudentIDを元に受講生情報を検索
     Student student = repository.searchStudent(studentId);
     // nullチェック
-    if (student == null) {
+    if (Objects.isNull(student)) {
       throw new NoDataException("該当する受講生が見つかりません。ID：" + studentId);
     }
     // 受講生情報のstudentIDに基づいてコース情報を検索

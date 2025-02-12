@@ -1,9 +1,9 @@
 package raisetech.student.management.controller;
 
-import static jakarta.validation.Validation.buildDefaultValidatorFactory;
-import static org.assertj.core.api.Assertions.assertThat;
+import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.when;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.content;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
@@ -11,11 +11,8 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.SerializationFeature;
 import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
-import jakarta.validation.ConstraintViolation;
-import jakarta.validation.Validator;
 import java.time.LocalDateTime;
 import java.util.List;
-import java.util.Set;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.mockito.Mockito;
@@ -30,6 +27,7 @@ import org.springframework.test.web.servlet.request.MockMvcRequestBuilders;
 import raisetech.student.management.data.Student;
 import raisetech.student.management.data.StudentsCourse;
 import raisetech.student.management.domain.StudentDetail;
+import raisetech.student.management.exception.NoDataException;
 import raisetech.student.management.service.StudentService;
 
 @WebMvcTest(StudentController.class)
@@ -45,6 +43,9 @@ class StudentControllerTest {
   private Student baseStudent;
   private List<StudentsCourse> baseCourses;
   private StudentDetail studentDetail;
+  // 日時固定
+  LocalDateTime fixedDateTime = LocalDateTime.of(2021, 5, 7, 16, 0, 0);
+
 
   // テスト用のモックBeanを定義
   @TestConfiguration
@@ -57,20 +58,16 @@ class StudentControllerTest {
 
   @BeforeEach
   void before() {
-
-
     // テストデータ作成
     baseStudent = new Student(
         999, "テスト花子", "てすとはなこ", "てすこ", "test@email", "テスト区", (short) 19, "Other",
         "");
     baseCourses = List.of(
-        new StudentsCourse(998L, 999, "Javaコース", LocalDateTime.now(), LocalDateTime.now().plusYears(1)),
-        new StudentsCourse(999L, 999, "AWSコース", LocalDateTime.now(), LocalDateTime.now().plusYears(1)));
+        new StudentsCourse(998L, 999, "Javaコース", fixedDateTime, fixedDateTime.plusYears(1)),
+        new StudentsCourse(999L, 999, "AWSコース", fixedDateTime, fixedDateTime.plusYears(1)));
     studentDetail = new StudentDetail(baseStudent, baseCourses);
 
   }
-
-  private final Validator validator = buildDefaultValidatorFactory().getValidator();
 
   @Test
   void 受講生一覧表示が実行でき_空のリストが返ってくること() throws Exception {
@@ -85,33 +82,73 @@ class StudentControllerTest {
   @Test
   void 受講生登録が実行でき_登録された受講生情報が返ってくること() throws Exception {
 
-    Mockito.when(service.registerStudent(Mockito.any())).thenReturn(studentDetail);
-
     var objectMapper = new ObjectMapper()
         .registerModule(new JavaTimeModule())
         .disable(SerializationFeature.WRITE_DATES_AS_TIMESTAMPS);
     String request = objectMapper.writeValueAsString(studentDetail);
 
+    when(service.registerStudent(any())).thenReturn(studentDetail);
+
     mockMvc.perform(MockMvcRequestBuilders.post("/registerStudent")
           .contentType(MediaType.APPLICATION_JSON)
           .content(request))
         .andExpect(status().isOk())
-        .andExpect(jsonPath("$.student.nickname").value("てすこ"));
+        .andExpect(jsonPath("$.student.studentId").value("999"))
+        .andExpect(jsonPath("$.student.fullName").value("テスト花子"))
+        .andExpect(jsonPath("$.student.namePronunciation").value("てすとはなこ"))
+        .andExpect(jsonPath("$.student.nickname").value("てすこ"))
+        .andExpect(jsonPath("$.student.email").value("test@email"))
+        .andExpect(jsonPath("$.student.area").value("テスト区"))
+        .andExpect(jsonPath("$.student.age").value("19"))
+        .andExpect(jsonPath("$.student.gender").value("Other"))
+        .andExpect(jsonPath("$.student.remark").value(""))
+        .andExpect(jsonPath("$.studentsCourses[0].attendingId").value("998"))
+        .andExpect(jsonPath("$.studentsCourses[0].studentId").value("999"))
+        .andExpect(jsonPath("$.studentsCourses[0].course").value("Javaコース"))
+        .andExpect(jsonPath("$.studentsCourses[0].startDate").value("2021-05-07T16:00:00"))
+        .andExpect(jsonPath("$.studentsCourses[0].deadline").value("2022-05-07T16:00:00"))
+        .andExpect(jsonPath("$.studentsCourses[1].attendingId").value("999"))
+        .andExpect(jsonPath("$.studentsCourses[1].studentId").value("999"))
+        .andExpect(jsonPath("$.studentsCourses[1].course").value("AWSコース"))
+        .andExpect(jsonPath("$.studentsCourses[1].startDate").value("2021-05-07T16:00:00"))
+        .andExpect(jsonPath("$.studentsCourses[1].deadline").value("2022-05-07T16:00:00"));
 
-    verify(service, times(1)).registerStudent(Mockito.any());
+    verify(service, times(1)).registerStudent(any());
   }
 
   @Test
   void 受講生検索が実行でき_受講生情報が返ってくること() throws Exception {
     int studentId = 999;
 
-    Mockito.when(service.searchStudent(studentId)).thenReturn(studentDetail);
+    var objectMapper = new ObjectMapper()
+        .registerModule(new JavaTimeModule())
+        .disable(SerializationFeature.WRITE_DATES_AS_TIMESTAMPS);
+
+    when(service.searchStudent(studentId)).thenReturn(studentDetail);
 
     // リクエストの送信
     mockMvc.perform(MockMvcRequestBuilders.get("/student/{studentId}", studentId)
           .contentType(MediaType.APPLICATION_JSON))
         .andExpect(status().isOk())
-        .andExpect(jsonPath("$.student.nickname").value("てすこ"));
+        .andExpect(jsonPath("$.student.studentId").value("999"))
+        .andExpect(jsonPath("$.student.fullName").value("テスト花子"))
+        .andExpect(jsonPath("$.student.namePronunciation").value("てすとはなこ"))
+        .andExpect(jsonPath("$.student.nickname").value("てすこ"))
+        .andExpect(jsonPath("$.student.email").value("test@email"))
+        .andExpect(jsonPath("$.student.area").value("テスト区"))
+        .andExpect(jsonPath("$.student.age").value("19"))
+        .andExpect(jsonPath("$.student.gender").value("Other"))
+        .andExpect(jsonPath("$.student.remark").value(""))
+        .andExpect(jsonPath("$.studentsCourses[0].attendingId").value("998"))
+        .andExpect(jsonPath("$.studentsCourses[0].studentId").value("999"))
+        .andExpect(jsonPath("$.studentsCourses[0].course").value("Javaコース"))
+        .andExpect(jsonPath("$.studentsCourses[0].startDate").value("2021-05-07T16:00:00"))
+        .andExpect(jsonPath("$.studentsCourses[0].deadline").value("2022-05-07T16:00:00"))
+        .andExpect(jsonPath("$.studentsCourses[1].attendingId").value("999"))
+        .andExpect(jsonPath("$.studentsCourses[1].studentId").value("999"))
+        .andExpect(jsonPath("$.studentsCourses[1].course").value("AWSコース"))
+        .andExpect(jsonPath("$.studentsCourses[1].startDate").value("2021-05-07T16:00:00"))
+        .andExpect(jsonPath("$.studentsCourses[1].deadline").value("2022-05-07T16:00:00"));
 
     verify(service, times(1)).searchStudent(studentId);
   }
@@ -133,25 +170,22 @@ class StudentControllerTest {
         .andExpect(status().isOk())
         .andExpect(content().string("テスト花子さんの更新処理が成功しました。"));
 
-    verify(service, times(1)).updateStudent(Mockito.any());
+    verify(service, times(1)).updateStudent(any());
   }
 
   @Test
-  void 入力チェック_正常時はエラーなし_異常時はバリデーションエラーが発生すること() {
+  void 受講生検索で存在しないstudentIdを指定した時にエラーメッセージが返ること() throws Exception {
+    int testStudentId = 1234567890;
 
-    // 正常データ：エラーなし
-    Set<ConstraintViolation<Student>> violations = validator.validate(baseStudent);
-    assertThat(violations.size()).isEqualTo(0);  // エラーなし
+    // Service 例外スロー
+    Mockito.when(service.searchStudent(testStudentId))
+        .thenThrow(new NoDataException("受講生情報が見つかりませんでした。ID: " + testStudentId));
 
-    // 異常値データ：エラー発生
-    var testStudent = new Student(
-        -1, "", "", "", "non.email", "", (short) -1, "", ""
-    );
-    Set<ConstraintViolation<Student>> testViolations = validator.validate(testStudent);
-    assertThat(testViolations.size()).isEqualTo(13);  // エラー数検証
-    for (ConstraintViolation<Student> v : testViolations) {  // エラー項目出力
-      System.out.println(v.getPropertyPath() + " :: " + v.getMessage());
-    }
+    // Controller エラーハンドリングを検証
+    mockMvc.perform(MockMvcRequestBuilders.get("/student/{studentId}", testStudentId)
+            .contentType(MediaType.APPLICATION_JSON))
+        .andExpect(status().isBadRequest())
+        .andExpect(content().string("受講生情報が見つかりませんでした。ID: 1234567890"));  // エラーメッセージの確認
   }
 
 }
