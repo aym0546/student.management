@@ -76,4 +76,5 @@ public class Student {
     this.gender = gender;
     this.remark = remark;
   }
+
 }
