@@ -2,7 +2,7 @@
 INSERT INTO students (full_name, name_pronunciation, nickname, email, area, age, gender, remark, is_deleted) VALUES
 ('山田 太郎', 'やまだ たろう', 'たろちゃん', 'taro.yamada@example.com', '東京', 20, 'Male', 'スポーツが好き', 0),
 ('鈴木 花子', 'すずき はなこ', 'はなちゃん', 'hanako.suzuki@example.com', '大阪', 22, 'Female', '読書が趣味', 0),
-('佐藤 健', 'さとう けん', 'けんくん', 'ken.sato@example.com', '福岡', 19, 'Male', NULL, 0),
+('佐藤 健', 'さとう けん', 'けんくん', 'ken.sato@example.com', '福岡', 19, 'Male', '', 0),
 ('高橋 美咲', 'たかはし みさき', 'みさみさ', 'misaki.takahashi@example.com', '北海道', 25, 'Female', '旅行が好き', 0),
 ('中村 俊介', 'なかむら しゅんすけ', 'しゅん', 'shun.nakamura@example.com', '愛知', 21, 'Male', '料理が得意', 0);
 
