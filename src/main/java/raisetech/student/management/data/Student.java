@@ -6,6 +6,7 @@ import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Pattern;
 import jakarta.validation.constraints.Positive;
+import lombok.EqualsAndHashCode;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
@@ -16,6 +17,7 @@ import org.hibernate.validator.constraints.Range;
 @Getter
 @Setter
 @NoArgsConstructor
+@EqualsAndHashCode
 public class Student {
 
   @Schema(description = "受講生ID", example = "12")
@@ -24,17 +26,17 @@ public class Student {
 
   @Schema(description = "受講生氏名", example = "山田 太郎")
   @NotBlank
-  @Length( min = 1, max = 50 )
+  @Length(min = 1, max = 50)
   private String fullName;
 
   @Schema(description = "氏名ふりがな", example = "やまだ たろう")
   @NotBlank
-  @Length( min = 1, max = 50 )
+  @Length(min = 1, max = 50)
   private String namePronunciation;
 
   @Schema(description = "ニックネーム", example = "たろ")
   @NotBlank
-  @Length( min = 1, max = 20 )
+  @Length(min = 1, max = 20)
   private String nickname;
 
   @Schema(description = "Emailアドレス")
@@ -44,12 +46,12 @@ public class Student {
 
   @Schema(description = "居住地域", example = "神奈川県横浜市")
   @NotBlank
-  @Length( min = 1, max = 100 )
+  @Length(min = 1, max = 100)
   private String area;
 
   @Schema(description = "年齢")
   @NotNull
-  @Range( min = 1, max = 127)
+  @Range(min = 1, max = 127)
   private short age;
 
   @Schema(description = "性別", example = "Female")
@@ -58,7 +60,7 @@ public class Student {
   private String gender;
 
   @Schema(description = "備考情報")
-  @Length( max = 200 )
+  @Length(max = 200)
   private String remark;
 
   @Schema(description = "キャンセルフラグ")
