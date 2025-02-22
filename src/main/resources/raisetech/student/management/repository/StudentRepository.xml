@@ -1,5 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+  "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
 <mapper namespace="raisetech.student.management.repository.StudentRepository">
 
   <!-- 受講生の一覧表示 -->
@@ -12,6 +13,11 @@
     SELECT * FROM students_courses
   </select>
 
+  <!-- 受講ステータス情報の一覧表示 -->
+  <select id="displayStatus" resultType="raisetech.student.management.data.StudentsCoursesStatus">
+    SELECT * FROM students_courses_status
+  </select>
+
   <!-- 受講生検索 -->
   <select id="searchStudent" resultType="raisetech.student.management.data.Student">
     SELECT * FROM students WHERE student_id = #{studentId}
@@ -22,26 +28,67 @@
     SELECT * FROM students_courses WHERE student_id = #{studentId}
   </select>
 
+  <!-- 受講ステータス検索 -->
+  <select id="searchStatuses" resultType="raisetech.student.management.data.StudentsCoursesStatus">
+    SELECT * FROM students_courses_status WHERE attending_id = #{attendingId}
+  </select>
+
   <!-- 受講生情報の登録 -->
   <insert id="registerStudent" useGeneratedKeys="true" keyProperty="studentId">
-    INSERT INTO students(full_name, name_pronunciation, nickname, email, area, age, gender, remark, is_deleted)
-    VALUES (#{fullName}, #{namePronunciation}, #{nickname}, #{email}, #{area}, #{age}, #{gender}, #{remark}, false)
+    INSERT INTO students(full_name, name_pronunciation, nickname, email, area, birth_date, gender,
+    remark, is_deleted)
+    VALUES (#{fullName}, #{namePronunciation}, #{nickname}, #{email}, #{area}, #{birthDate},
+    #{gender}, #{remark}, false)
   </insert>
 
   <!-- コース情報の登録 -->
   <insert id="registerStudentsCourses" useGeneratedKeys="true" keyProperty="attendingId">
-    INSERT INTO students_courses(student_id, course, start_date, deadline)
-    VALUES (#{studentId}, #{course}, #{startDate}, #{deadline})
+    INSERT INTO students_courses(student_id, course_id)
+    VALUES (#{studentId}, #{courseId})
+  </insert>
+
+  <!-- 受講ステータス情報の登録 -->
+  <insert id="registerStudentsCoursesStatus" useGeneratedKeys="true" keyProperty="statusHistoryId">
+    INSERT INTO students_courses_status(attending_id, status_id, status_start_date, status_end_date,
+    change_reason)
+    VALUES (#{attendingId}, #{statusId}, #{statusStartDate}, #{statusEndDate}, #{changeReason})
   </insert>
 
   <!-- 受講生情報の更新 -->
   <update id="updateStudent">
-    UPDATE students SET full_name = #{fullName}, name_pronunciation = #{namePronunciation}, nickname = #{nickname}, email = #{email}, area = #{area}, age = #{age}, gender = #{gender}, remark = #{remark}, is_deleted = #{isDeleted} WHERE student_id = #{studentId}
+    UPDATE students SET full_name = #{fullName}, name_pronunciation = #{namePronunciation}, nickname
+    = #{nickname}, email = #{email}, area = #{area}, birth_date = #{birthDate}, gender = #{gender},
+    remark =
+    #{remark}, is_deleted = #{isDeleted} WHERE student_id = #{studentId}
   </update>
 
   <!-- コース情報の更新 -->
   <update id="updateStudentsCourses">
-    UPDATE students_courses SET course = #{course} WHERE attending_id = #{attendingId}
+    UPDATE students_courses SET course_id = #{courseId} WHERE attending_id = #{attendingId}
+  </update>
+
+  <!-- 受講ステータス情報の更新 -->
+  <update id="updateStudentsCoursesStatus">
+    UPDATE students_courses_status
+    SET status_start_date = #{statusStartDate}, status_end_date = #{statusEndDate}, change_reason =
+    #{changeReason}
+    WHERE status_history_id = #{statusHistoryId}
+  </update>
+
+  <!-- 既存の未終了ステータスを更新 -->
+  <update id="updateStatusEndDateForMysql">
+    UPDATE students_courses_status
+    SET status_end_date = DATE_ADD(CAST(#{statusStartDate} AS DATE), INTERVAL -1 DAY)
+    WHERE attending_id = #{attendingId}
+    AND status_end_date IS NULL;
+  </update>
+
+  <!-- 既存の未終了ステータスを更新【H2DBテスト用】 -->
+  <update id="updateStatusEndDateForH2">
+    UPDATE students_courses_status
+    SET status_end_date = DATEADD(DAY, -1, CAST(#{statusStartDate} AS DATE))
+    WHERE attending_id = #{attendingId}
+    AND status_end_date IS NULL;
   </update>
 
 </mapper>

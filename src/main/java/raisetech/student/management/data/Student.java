@@ -1,17 +1,17 @@
 package raisetech.student.management.data;
 
+import com.fasterxml.jackson.annotation.JsonFormat;
 import io.swagger.v3.oas.annotations.media.Schema;
 import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.NotBlank;
-import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Pattern;
-import jakarta.validation.constraints.Positive;
+import java.time.LocalDate;
+import java.time.LocalDateTime;
 import lombok.EqualsAndHashCode;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 import org.hibernate.validator.constraints.Length;
-import org.hibernate.validator.constraints.Range;
 
 @Schema(description = "受講生情報")
 @Getter
@@ -21,7 +21,6 @@ import org.hibernate.validator.constraints.Range;
 public class Student {
 
   @Schema(description = "受講生ID", example = "12")
-  @Positive
   private Integer studentId;
 
   @Schema(description = "受講生氏名", example = "山田 太郎")
@@ -49,10 +48,9 @@ public class Student {
   @Length(min = 1, max = 100)
   private String area;
 
-  @Schema(description = "年齢")
-  @NotNull
-  @Range(min = 1, max = 127)
-  private short age;
+  @Schema(description = "生年月日")
+  @JsonFormat(pattern = "yyyy-MM-dd")
+  private LocalDate birthDate;
 
   @Schema(description = "性別", example = "Female")
   @NotBlank
@@ -66,15 +64,21 @@ public class Student {
   @Schema(description = "キャンセルフラグ")
   private boolean isDeleted;
 
+  @Schema(description = "登録日時")
+  private LocalDateTime createdAt;
+
+  @Schema(description = "更新日時")
+  private LocalDateTime updatedAt;
+
   public Student(Integer studentId, String fullName, String namePronunciation, String nickname,
-      String email, String area, short age, String gender, String remark) {
+      String email, String area, LocalDate birthDate, String gender, String remark) {
     this.studentId = studentId;
     this.fullName = fullName;
     this.namePronunciation = namePronunciation;
     this.nickname = nickname;
     this.email = email;
     this.area = area;
-    this.age = age;
+    this.birthDate = birthDate;
     this.gender = gender;
     this.remark = remark;
   }

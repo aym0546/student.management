@@ -1,10 +1,7 @@
 package raisetech.student.management.data;
 
 import io.swagger.v3.oas.annotations.media.Schema;
-import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
-import jakarta.validation.constraints.Pattern;
-import jakarta.validation.constraints.Positive;
 import java.time.LocalDateTime;
 import lombok.AllArgsConstructor;
 import lombok.EqualsAndHashCode;
@@ -26,21 +23,21 @@ public class StudentsCourse {
   private Long attendingId;
 
   @Schema(description = "受講生ID", example = "21")
-  @Positive
   private Integer studentId;
 
-  @Schema(description = "受講コース名", example = "Javaコース")
-  @NotBlank
-  @Pattern(
-      regexp = "Javaコース|AWSコース|WordPressコース|デザインコース|webマーケティングコース|映像制作コース|フロントエンドコース",
-      message = "Javaコース|AWSコース|WordPressコース|デザインコース|webマーケティングコース|映像制作コース|フロントエンドコース のいずれかを入力してください。"
-  )
-  private String course;
+  @Schema(description = "コースID", example = "1 = Javaコース")
+  @NotNull
+  private Integer courseId;
 
-  @Schema(description = "コース受講開始日", example = "2025-01-01")
-  private LocalDateTime startDate;
+  @Schema(description = "登録日時")
+  private LocalDateTime createdAt;
 
-  @Schema(description = "コース受講期限日", example = "2025-06-30")
-  private LocalDateTime deadline;
+  @Schema(description = "更新日時")
+  private LocalDateTime updatedAt;
 
+  public StudentsCourse(Long attendingId, Integer studentId, Integer courseId) {
+    this.attendingId = attendingId;
+    this.studentId = studentId;
+    this.courseId = courseId;
+  }
 }

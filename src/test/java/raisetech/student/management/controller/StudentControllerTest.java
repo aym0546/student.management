@@ -4,6 +4,7 @@ import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.content;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
@@ -11,6 +12,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.SerializationFeature;
 import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
+import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.List;
 import org.junit.jupiter.api.BeforeEach;
@@ -26,6 +28,8 @@ import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.request.MockMvcRequestBuilders;
 import raisetech.student.management.data.Student;
 import raisetech.student.management.data.StudentsCourse;
+import raisetech.student.management.data.StudentsCoursesStatus;
+import raisetech.student.management.domain.CourseDetail;
 import raisetech.student.management.domain.StudentDetail;
 import raisetech.student.management.exception.NoDataException;
 import raisetech.student.management.service.StudentService;
@@ -40,37 +44,53 @@ class StudentControllerTest {
   @Autowired
   private StudentService service; // モックBeanを注入
 
-  private Student baseStudent;
-  private List<StudentsCourse> baseCourses;
+  @Autowired
+  private ObjectMapper objectMapper;
+
+  private Integer studentId;
+  private Student student;
+  private StudentsCourse course;
+  private StudentsCoursesStatus status;
+  private List<CourseDetail> courseDetails;
   private StudentDetail studentDetail;
+
   // 日時固定
   LocalDateTime fixedDateTime = LocalDateTime.of(2021, 5, 7, 16, 0, 0);
-
 
   // テスト用のモックBeanを定義
   @TestConfiguration
   static class MockConfig {
+
     @Bean
     public StudentService studentService() {
       return Mockito.mock(StudentService.class); // Mockitoでモック化
+    }
+
+    @Bean
+    public ObjectMapper objectMapper() {
+      ObjectMapper objectMapper = new ObjectMapper();
+      objectMapper.registerModule(new JavaTimeModule()); // JavaTimeModuleを登録
+      return objectMapper;
     }
   }
 
   @BeforeEach
   void before() {
-    // テストデータ作成
-    baseStudent = new Student(
-        999, "テスト花子", "てすとはなこ", "てすこ", "test@email", "テスト区", (short) 19, "Other",
-        "");
-    baseCourses = List.of(
-        new StudentsCourse(998L, 999, "Javaコース", fixedDateTime, fixedDateTime.plusYears(1)),
-        new StudentsCourse(999L, 999, "AWSコース", fixedDateTime, fixedDateTime.plusYears(1)));
-    studentDetail = new StudentDetail(baseStudent, baseCourses);
+    studentId = 123;
+    student = new Student(
+        studentId, "ベース テスト", "べーす てすと",
+        "ベース", "base@email.com", "テスト区",
+        LocalDate.of(2004, 12, 1), "Other", "");
 
+    course = new StudentsCourse(1L, studentId, 1);
+    status = new StudentsCoursesStatus(1, 1L, 1, LocalDate.of(2000, 1, 1), null, "新規申し込み");
+
+    courseDetails = List.of(new CourseDetail(course, List.of(status)));
+    studentDetail = new StudentDetail(student, courseDetails);
   }
 
   @Test
-  void 受講生一覧表示が実行でき_空のリストが返ってくること() throws Exception {
+  void 受講生一覧表示_成功し空のリストが返ってくること() throws Exception {
 
     mockMvc.perform(MockMvcRequestBuilders.get("/studentList"))
         .andExpect(status().isOk())
@@ -80,75 +100,92 @@ class StudentControllerTest {
   }
 
   @Test
-  void 受講生登録が実行でき_登録された受講生情報が返ってくること() throws Exception {
+  void 受講生登録_正常な実行に対し200OKと登録された受講生情報が返ってくること() throws Exception {
 
-    var objectMapper = new ObjectMapper()
-        .registerModule(new JavaTimeModule())
-        .disable(SerializationFeature.WRITE_DATES_AS_TIMESTAMPS);
-    String request = objectMapper.writeValueAsString(studentDetail);
+    when(service.registerStudent(Mockito.any(StudentDetail.class))).thenReturn(studentDetail);
 
-    when(service.registerStudent(any())).thenReturn(studentDetail);
-
-    mockMvc.perform(MockMvcRequestBuilders.post("/registerStudent")
-          .contentType(MediaType.APPLICATION_JSON)
-          .content(request))
+    mockMvc.perform(post("/registerStudent")
+            .contentType(MediaType.APPLICATION_JSON)
+            .content(objectMapper.writeValueAsString(studentDetail)))
         .andExpect(status().isOk())
-        .andExpect(jsonPath("$.student.studentId").value("999"))
-        .andExpect(jsonPath("$.student.fullName").value("テスト花子"))
-        .andExpect(jsonPath("$.student.namePronunciation").value("てすとはなこ"))
-        .andExpect(jsonPath("$.student.nickname").value("てすこ"))
-        .andExpect(jsonPath("$.student.email").value("test@email"))
+
+        .andExpect(jsonPath("$.student.studentId").value(123))
+        .andExpect(jsonPath("$.student.fullName").value("ベース テスト"))
+        .andExpect(jsonPath("$.student.namePronunciation").value("べーす てすと"))
+        .andExpect(jsonPath("$.student.nickname").value("ベース"))
+        .andExpect(jsonPath("$.student.email").value("base@email.com"))
         .andExpect(jsonPath("$.student.area").value("テスト区"))
-        .andExpect(jsonPath("$.student.age").value("19"))
+        .andExpect(jsonPath("$.student.birthDate").value("2004-12-01"))
         .andExpect(jsonPath("$.student.gender").value("Other"))
         .andExpect(jsonPath("$.student.remark").value(""))
-        .andExpect(jsonPath("$.studentsCourses[0].attendingId").value("998"))
-        .andExpect(jsonPath("$.studentsCourses[0].studentId").value("999"))
-        .andExpect(jsonPath("$.studentsCourses[0].course").value("Javaコース"))
-        .andExpect(jsonPath("$.studentsCourses[0].startDate").value("2021-05-07T16:00:00"))
-        .andExpect(jsonPath("$.studentsCourses[0].deadline").value("2022-05-07T16:00:00"))
-        .andExpect(jsonPath("$.studentsCourses[1].attendingId").value("999"))
-        .andExpect(jsonPath("$.studentsCourses[1].studentId").value("999"))
-        .andExpect(jsonPath("$.studentsCourses[1].course").value("AWSコース"))
-        .andExpect(jsonPath("$.studentsCourses[1].startDate").value("2021-05-07T16:00:00"))
-        .andExpect(jsonPath("$.studentsCourses[1].deadline").value("2022-05-07T16:00:00"));
 
-    verify(service, times(1)).registerStudent(any());
+        .andExpect(jsonPath("$.courseDetails[0].studentsCourse.attendingId").value(1))
+        .andExpect(jsonPath("$.courseDetails[0].studentsCourse.studentId").value(123))
+        .andExpect(jsonPath("$.courseDetails[0].studentsCourse.courseId").value(1))
+
+        .andExpect(jsonPath("$.courseDetails[0].statusHistory[0].statusHistoryId").value(1))
+        .andExpect(jsonPath("$.courseDetails[0].statusHistory[0].attendingId").value(1L))
+        .andExpect(jsonPath("$.courseDetails[0].statusHistory[0].statusId").value(1))
+        .andExpect(
+            jsonPath("$.courseDetails[0].statusHistory[0].statusStartDate").value("2000-01-01"))
+        .andExpect(
+            jsonPath("$.courseDetails[0].statusHistory[0].changeReason").value("新規申し込み"))
+    ;
   }
 
   @Test
-  void 受講生検索が実行でき_受講生情報が返ってくること() throws Exception {
-    int studentId = 999;
+  void 受講生登録_無効なリクエストに対して400エラーが返されること() throws Exception {
+    // 無効なリクエストを準備
+    StudentDetail invalidDetail = new StudentDetail(null, null);
 
-    var objectMapper = new ObjectMapper()
-        .registerModule(new JavaTimeModule())
-        .disable(SerializationFeature.WRITE_DATES_AS_TIMESTAMPS);
+    mockMvc.perform(post("/registerStudent")
+            .contentType(MediaType.APPLICATION_JSON)
+            .content(objectMapper.writeValueAsString(invalidDetail)))
+        .andExpect(status().isBadRequest());
+  }
 
+  @Test
+  void 受講生登録_サーバーエラー時に500エラーが返されること() throws Exception {
+    when(service.registerStudent(any(StudentDetail.class))).thenThrow(
+        new RuntimeException("サーバーエラー"));
+
+    mockMvc.perform(post("/registerStudent")
+            .contentType(MediaType.APPLICATION_JSON)
+            .content(objectMapper.writeValueAsString(studentDetail)))  // リクエストデータは適切なものを使用
+        .andExpect(status().isInternalServerError());
+  }
+
+  @Test
+  void 受講生検索_正常に実行され200OKと受講生情報が返ってくること() throws Exception {
     when(service.searchStudent(studentId)).thenReturn(studentDetail);
 
     // リクエストの送信
     mockMvc.perform(MockMvcRequestBuilders.get("/student/{studentId}", studentId)
-          .contentType(MediaType.APPLICATION_JSON))
+            .contentType(MediaType.APPLICATION_JSON))
         .andExpect(status().isOk())
-        .andExpect(jsonPath("$.student.studentId").value("999"))
-        .andExpect(jsonPath("$.student.fullName").value("テスト花子"))
-        .andExpect(jsonPath("$.student.namePronunciation").value("てすとはなこ"))
-        .andExpect(jsonPath("$.student.nickname").value("てすこ"))
-        .andExpect(jsonPath("$.student.email").value("test@email"))
+
+        .andExpect(jsonPath("$.student.studentId").value(123))
+        .andExpect(jsonPath("$.student.fullName").value("ベース テスト"))
+        .andExpect(jsonPath("$.student.namePronunciation").value("べーす てすと"))
+        .andExpect(jsonPath("$.student.nickname").value("ベース"))
+        .andExpect(jsonPath("$.student.email").value("base@email.com"))
         .andExpect(jsonPath("$.student.area").value("テスト区"))
-        .andExpect(jsonPath("$.student.age").value("19"))
+        .andExpect(jsonPath("$.student.birthDate").value("2004-12-01"))
         .andExpect(jsonPath("$.student.gender").value("Other"))
         .andExpect(jsonPath("$.student.remark").value(""))
-        .andExpect(jsonPath("$.studentsCourses[0].attendingId").value("998"))
-        .andExpect(jsonPath("$.studentsCourses[0].studentId").value("999"))
-        .andExpect(jsonPath("$.studentsCourses[0].course").value("Javaコース"))
-        .andExpect(jsonPath("$.studentsCourses[0].startDate").value("2021-05-07T16:00:00"))
-        .andExpect(jsonPath("$.studentsCourses[0].deadline").value("2022-05-07T16:00:00"))
-        .andExpect(jsonPath("$.studentsCourses[1].attendingId").value("999"))
-        .andExpect(jsonPath("$.studentsCourses[1].studentId").value("999"))
-        .andExpect(jsonPath("$.studentsCourses[1].course").value("AWSコース"))
-        .andExpect(jsonPath("$.studentsCourses[1].startDate").value("2021-05-07T16:00:00"))
-        .andExpect(jsonPath("$.studentsCourses[1].deadline").value("2022-05-07T16:00:00"));
+
+        .andExpect(jsonPath("$.courseDetails[0].studentsCourse.attendingId").value(1))
+        .andExpect(jsonPath("$.courseDetails[0].studentsCourse.studentId").value(123))
+        .andExpect(jsonPath("$.courseDetails[0].studentsCourse.courseId").value(1))
+
+        .andExpect(jsonPath("$.courseDetails[0].statusHistory[0].statusHistoryId").value(1))
+        .andExpect(jsonPath("$.courseDetails[0].statusHistory[0].attendingId").value(1L))
+        .andExpect(jsonPath("$.courseDetails[0].statusHistory[0].statusId").value(1))
+        .andExpect(
+            jsonPath("$.courseDetails[0].statusHistory[0].statusStartDate").value("2000-01-01"))
+        .andExpect(
+            jsonPath("$.courseDetails[0].statusHistory[0].changeReason").value("新規申し込み"))
+    ;
 
     verify(service, times(1)).searchStudent(studentId);
   }
@@ -164,11 +201,11 @@ class StudentControllerTest {
 
     // PUT /updateStudent にJSONを送信
     mockMvc.perform(MockMvcRequestBuilders.put("/updateStudent")
-          .contentType(MediaType.APPLICATION_JSON)
-          .content(request))
+            .contentType(MediaType.APPLICATION_JSON)
+            .content(request))
         // レスポンスの検証
         .andExpect(status().isOk())
-        .andExpect(content().string("テスト花子さんの更新処理が成功しました。"));
+        .andExpect(content().string("ベース テストさんの更新処理が成功しました。"));
 
     verify(service, times(1)).updateStudent(any());
   }
@@ -185,7 +222,8 @@ class StudentControllerTest {
     mockMvc.perform(MockMvcRequestBuilders.get("/student/{studentId}", testStudentId)
             .contentType(MediaType.APPLICATION_JSON))
         .andExpect(status().isBadRequest())
-        .andExpect(content().string("受講生情報が見つかりませんでした。ID: 1234567890"));  // エラーメッセージの確認
+        .andExpect(
+            content().string("受講生情報が見つかりませんでした。ID: 1234567890"));  // エラーメッセージの確認
   }
 
 }
