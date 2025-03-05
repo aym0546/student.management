@@ -44,8 +44,6 @@ class StudentControllerTest {
   private StudentService service; // モックBeanを注入
 
   private Student student;
-  private List<StudentsCourse> courseList;
-  private List<CourseStatus> statusList;
   private CourseDetail courseDetail1;
   private CourseDetail courseDetail2;
   private StudentDetail studentDetail;
@@ -105,7 +103,7 @@ class StudentControllerTest {
     mockMvc.perform(MockMvcRequestBuilders.post("/registerStudent")
             .contentType(MediaType.APPLICATION_JSON)
             .content(request))
-        .andExpect(status().isOk())
+        .andExpect(status().isCreated())
         .andExpect(jsonPath("$.student.studentId").value("999"))
         .andExpect(jsonPath("$.student.fullName").value("テスト花子"))
         .andExpect(jsonPath("$.student.namePronunciation").value("てすとはなこ"))
