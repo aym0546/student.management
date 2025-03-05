@@ -5,7 +5,7 @@ CREATE TABLE students (
     nickname VARCHAR(20) NOT NULL,
     email VARCHAR(100) NOT NULL,
     area VARCHAR(100) NOT NULL,
-    age TINYINT NOT NULL,
+    birth_date DATE NULL,
     gender VARCHAR(10) NOT NULL DEFAULT 'Other',
     remark VARCHAR(200) NULL,
     is_deleted TINYINT NOT NULL DEFAULT 0,
@@ -15,9 +15,17 @@ CREATE TABLE students (
 CREATE TABLE students_courses (
     attending_id INT AUTO_INCREMENT PRIMARY KEY,
     student_id INT NOT NULL,
-    course VARCHAR(30) NOT NULL,
+    course_id INT NOT NULL,
     start_date DATE NOT NULL,
-    deadline DATE NOT NULL,
+    end_date DATE NULL,
     CONSTRAINT fk_student FOREIGN KEY (student_id)
         REFERENCES students(student_id) ON DELETE CASCADE
+);
+
+CREATE TABLE course_status (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    attending_id INT NOT NULL,
+    status ENUM('仮申し込み', '本申し込み', '受講中', '受講終了') NOT NULL,
+    CONSTRAINT fk_course_status_attending FOREIGN KEY (attending_id)
+        REFERENCES students_courses(attending_id) ON DELETE CASCADE
 );
