@@ -83,7 +83,7 @@ class StudentControllerTest {
   @Test
   void 受講生一覧表示が実行でき_空のリストが返ってくること() throws Exception {
 
-    mockMvc.perform(MockMvcRequestBuilders.get("/studentList"))
+    mockMvc.perform(MockMvcRequestBuilders.get("/students"))
         .andExpect(status().isOk())
         .andExpect(content().json("[]"));
 
@@ -100,7 +100,7 @@ class StudentControllerTest {
 
     when(service.registerStudent(any())).thenReturn(studentDetail);
 
-    mockMvc.perform(MockMvcRequestBuilders.post("/registerStudent")
+    mockMvc.perform(MockMvcRequestBuilders.post("/students")
             .contentType(MediaType.APPLICATION_JSON)
             .content(request))
         .andExpect(status().isCreated())
@@ -144,7 +144,7 @@ class StudentControllerTest {
     when(service.searchStudent(studentId)).thenReturn(studentDetail);
 
     // リクエストの送信
-    mockMvc.perform(MockMvcRequestBuilders.get("/student/{studentId}", studentId)
+    mockMvc.perform(MockMvcRequestBuilders.get("/students/{studentId}", studentId)
             .contentType(MediaType.APPLICATION_JSON))
         .andExpect(status().isOk())
         .andExpect(jsonPath("$.student.studentId").value("999"))
@@ -186,7 +186,7 @@ class StudentControllerTest {
     String request = objectMapper.writeValueAsString(studentDetail);
 
     // PUT /updateStudent にJSONを送信
-    mockMvc.perform(MockMvcRequestBuilders.put("/updateStudent")
+    mockMvc.perform(MockMvcRequestBuilders.put("/students")
             .contentType(MediaType.APPLICATION_JSON)
             .content(request))
         // レスポンスの検証
@@ -205,7 +205,7 @@ class StudentControllerTest {
         .thenThrow(new NoDataException("受講生情報が見つかりませんでした。ID: " + testStudentId));
 
     // Controller エラーハンドリングを検証
-    mockMvc.perform(MockMvcRequestBuilders.get("/student/{studentId}", testStudentId)
+    mockMvc.perform(MockMvcRequestBuilders.get("/students/{studentId}", testStudentId)
             .contentType(MediaType.APPLICATION_JSON))
         .andExpect(status().isNotFound())
         .andExpect(

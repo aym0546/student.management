@@ -11,6 +11,7 @@ import java.net.URI;
 import java.util.List;
 import org.apache.ibatis.annotations.Update;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -20,7 +21,6 @@ import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RestController;
 import raisetech.student.management.domain.StudentDetail;
-import raisetech.student.management.exception.TestException;
 import raisetech.student.management.service.StudentService;
 
 /**
@@ -49,7 +49,7 @@ public class StudentController {
    * @return 受講生一覧（全件）
    */
   @Operation(summary = "一覧表示", description = "受講生の一覧を表示します。")
-  @GetMapping("/studentList")
+  @GetMapping("/students")
   public List<StudentDetail> getStudent() {
     return service.getStudentList();
   }
@@ -66,7 +66,7 @@ public class StudentController {
       @ApiResponse(responseCode = "400", description = "更新処理に失敗しました"),
       @ApiResponse(responseCode = "500", description = "サーバーエラー")
   })
-  @PostMapping("/registerStudent")
+  @PostMapping("/students")
   public ResponseEntity<StudentDetail> registerStudent(
       @RequestBody @Valid StudentDetail studentDetail) {
 
@@ -88,7 +88,7 @@ public class StudentController {
       @ApiResponse(responseCode = "404", description = "該当する受講生が見つかりません"),
       @ApiResponse(responseCode = "500", description = "サーバーエラー")
   })
-  @GetMapping("/student/{studentId}")
+  @GetMapping("/students/{studentId}")
   public StudentDetail getStudent(
       @Parameter(description = "検索する受講生のID", example = "12")
       @PathVariable @Valid Integer studentId) {
@@ -107,7 +107,7 @@ public class StudentController {
       @ApiResponse(responseCode = "400", description = "更新処理に失敗しました"),
       @ApiResponse(responseCode = "500", description = "サーバーエラー")
   })
-  @PutMapping("/updateStudent")
+  @PutMapping("/students")
   public ResponseEntity<String> updateStudent(
       @RequestBody @Validated({Default.class, Update.class}) StudentDetail studentDetail) {
     service.updateStudent(studentDetail);
@@ -117,15 +117,15 @@ public class StudentController {
   }
 
   /**
-   * 【エラーハンドリングテスト用メソッド】
+   * 【リダイレクト】 旧URIが指定された場合に、正しいURI"/students"にリダイレクトする。
    *
-   * @return エラーメッセージをクライアントに返す
-   * @throws TestException テスト例外
+   * @return /students リダイレクト
    */
-  @Operation(summary = "エラーハンドリングテスト用メソッド", description = "テスト例外用のメソッドです。実際には運用しません。")
-  @GetMapping("/students")
-  public String throwException() throws TestException {
-    throw new TestException("このAPIは現在使用できません。「/studentList」を使用してください。");
+  @Operation(summary = "/students リダイレクト", description = "旧URIのハンドリングメソッドです。")
+  @GetMapping("/studentList")
+  public ResponseEntity<Void> redirectStudents() {
+    return ResponseEntity.status(HttpStatus.SEE_OTHER)
+        .location(URI.create("/students")).build();
   }
 
 }
