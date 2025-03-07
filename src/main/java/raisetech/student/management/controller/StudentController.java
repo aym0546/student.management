@@ -71,7 +71,7 @@ public class StudentController {
       @RequestBody @Valid StudentDetail studentDetail) {
 
     StudentDetail createdStudent = service.registerStudent(studentDetail);
-    URI location = URI.create("/student/" + createdStudent.getStudent().getStudentId());
+    URI location = URI.create("/students/" + createdStudent.getStudent().getStudentId());
 
     return ResponseEntity.created(location).body(createdStudent);
   }
