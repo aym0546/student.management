@@ -23,12 +23,14 @@ public class GlobalExceptionHandler {
   // エラーハンドリングテスト用
   @ExceptionHandler(TestException.class)
   public ResponseEntity<String> handleTestExceptions(Exception ex) {
-    return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("エラーが発生しました。：" + ex.getMessage());
+    return ResponseEntity.status(HttpStatus.BAD_REQUEST)
+        .body("エラーが発生しました。：" + ex.getMessage());
   }
 
   // バリデーションエラー
   @ExceptionHandler(MethodArgumentNotValidException.class)
-  public ResponseEntity<Map<String, String>> handleValidationExceptions(MethodArgumentNotValidException ex) {
+  public ResponseEntity<Map<String, String>> handleValidationExceptions(
+      MethodArgumentNotValidException ex) {
     Map<String, String> errors = new HashMap<>();
     // エラー元のフィールドkeyとエラーメッセージvalueをMapに格納
     for (ObjectError error : ex.getBindingResult().getAllErrors()) {
@@ -43,7 +45,8 @@ public class GlobalExceptionHandler {
 
   // 制約違反エラー
   @ExceptionHandler(DataIntegrityViolationException.class)
-  public ResponseEntity<List<String>> handleDataIntegrityViolationException(DataIntegrityViolationException ex) {
+  public ResponseEntity<List<String>> handleDataIntegrityViolationException(
+      DataIntegrityViolationException ex) {
 
     // エラーメッセージ取得
     String causeMessage;
@@ -98,23 +101,24 @@ public class GlobalExceptionHandler {
 
   // 検索不一致
   @ExceptionHandler(NullPointerException.class)
-  public ResponseEntity<Map<String, Object>> handleNullPointerException(NullPointerException ex, HttpServletRequest req) {
+  public ResponseEntity<Map<String, Object>> handleNullPointerException(NullPointerException ex,
+      HttpServletRequest req) {
     Map<String, Object> errors = new HashMap<>();
-    errors.put("status", HttpStatus.BAD_REQUEST.value());
+    errors.put("status", HttpStatus.NOT_FOUND.value());
     errors.put("path", req.getRequestURI());
     errors.put("message", "該当するデータが見つかりません。");
-    return new ResponseEntity<>(errors, HttpStatus.BAD_REQUEST);
+    return new ResponseEntity<>(errors, HttpStatus.NOT_FOUND);
   }
 
   // 受講生情報が確認できない
   @ExceptionHandler(NoDataException.class)
   public ResponseEntity<String> handleNoDataException(NoDataException ex) {
-    return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(ex.getMessage());
+    return ResponseEntity.status(HttpStatus.NOT_FOUND).body(ex.getMessage());
   }
 
   // その他の例外
   @ExceptionHandler(Exception.class)
-  public ResponseEntity<String> handleOtherException(Exception ex){
+  public ResponseEntity<String> handleOtherException(Exception ex) {
     return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
         .body("サーバーエラーが発生しました。：" + ex.getMessage());
   }
