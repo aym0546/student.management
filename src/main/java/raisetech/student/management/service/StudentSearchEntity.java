@@ -46,6 +46,4 @@ public record StudentSearchEntity(
 
 ) {
 
-  public StudentSearchEntity {
-  }
 }

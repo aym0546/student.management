@@ -40,20 +40,6 @@ public class StudentService {
     this.converter = converter;
   }
 
-//  /**
-//   * 【受講生一覧表示】 全件検索のため、条件指定は行わない。
-//   *
-//   * @return 受講生詳細情報一覧（全件）
-//   */
-//  public List<StudentDetail> getStudentList() {
-//    List<Student> studentList = repository.displayStudent();
-//    List<StudentsCourse> studentsCourses = repository.displayCourse();
-//    List<CourseStatus> courseStatuses = repository.displayStatus();
-//    return converter.convertStudentDetails(studentList,
-//        converter.convertCourseDetails(studentsCourses, courseStatuses));
-//  }
-
-
   /**
    * 【詳細情報検索】 リクエストに含まれるデータに基づいて検索を行う。
    *
