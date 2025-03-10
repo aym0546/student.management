@@ -70,4 +70,63 @@
     UPDATE course_status SET status = #{status} WHERE id = #{id}
   </update>
 
+  <!-- 受講生の詳細検索 -->
+  <select id="findStudent" resultType="raisetech.student.management.data.Student">
+    SELECT DISTINCT * FROM students
+    <where>
+      <if test='name != null and !name.isBlank()'>
+        (
+        full_name LIKE CONCAT('%', #{name}, '%')
+        OR name_pronunciation LIKE CONCAT('%', #{name}, '%')
+        OR nickname LIKE CONCAT('%', #{name}, '%')
+        )
+      </if>
+      <if test='area != null and !area.isBlank()'>
+        AND area LIKE CONCAT('%', #{area}, '%')
+      </if>
+      <if test='email != null and !email.isBlank()'>
+        AND email = #{email}
+      </if>
+      <if test='gender != null and !gender.isBlank()'>
+        AND gender = #{gender}
+      </if>
+      <if test='remark != null and !remark.isBlank()'>
+        AND remark LIKE CONCAT('%', #{remark}, '%')
+      </if>
+      <if test='startBirthDate != null'>
+        AND birth_date &gt;= #{startBirthDate}
+      </if>
+      <if test='endBirthDate != null'>
+        AND birth_date &lt;= #{endBirthDate}
+      </if>
+    </where>
+  </select>
+
+  <!-- 受講コース情報の詳細検索 -->
+  <select id="findCourse" resultType="raisetech.student.management.data.StudentsCourse">
+    SELECT DISTINCT sc.* FROM students_courses sc
+    JOIN courses c ON sc.course_id = c.course_id
+    <where>
+      <if test='courseId != null'>
+        AND sc.course_id = #{courseId}
+      </if>
+      <if test='category != null and !category.isBlank()'>
+        AND c.category = #{category}
+      </if>
+    </where>
+  </select>
+
+  <!-- 受講ステータス情報の詳細検索 -->
+  <select id="findStatus" resultType="raisetech.student.management.data.CourseStatus">
+    SELECT DISTINCT * FROM course_status
+    <where>
+      <if test='status != null and !status.isEmpty()'>
+        status IN (
+        <foreach item="item" index="index" collection="status" separator=",">
+          #{item}
+        </foreach>
+        )
+      </if>
+    </where>
+  </select>
 </mapper>

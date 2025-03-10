@@ -29,3 +29,13 @@ CREATE TABLE course_status (
     CONSTRAINT fk_course_status_attending FOREIGN KEY (attending_id)
         REFERENCES students_courses(attending_id) ON DELETE CASCADE
 );
+
+CREATE TABLE courses (
+    course_id INT AUTO_INCREMENT PRIMARY KEY,
+    course_name VARCHAR(50) NOT NULL,
+    category VARCHAR(20) NOT NULL,
+    duration INT NOT NULL DEFAULT 6,
+    is_closed BOOLEAN NOT NULL DEFAULT FALSE,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
+);

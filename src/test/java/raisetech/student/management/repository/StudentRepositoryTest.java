@@ -13,6 +13,7 @@ import raisetech.student.management.data.CourseStatus;
 import raisetech.student.management.data.CourseStatus.Status;
 import raisetech.student.management.data.Student;
 import raisetech.student.management.data.StudentsCourse;
+import raisetech.student.management.service.StudentSearchEntity;
 
 @MybatisTest
 class StudentRepositoryTest {
@@ -170,6 +171,45 @@ class StudentRepositoryTest {
 
     assertEquals(1, updated);
     assertEquals(status.getStatus(), actual.getStatus());
+  }
+
+  @Test
+  void findStudent_検索条件に一致する受講生が取得できること() {
+    // 検索条件
+    var condition = new StudentSearchEntity(
+        "中村", LocalDate.of(1999, 12, 31), LocalDate.of(2000, 12, 31), null, null, null, null,
+        null, null, null, null, List.of());
+
+    var students = sut.findStudent(condition);
+
+    assertThat(students).isNotEmpty();
+    assertThat(students.getFirst().getFullName()).contains("中村");
+  }
+
+  @Test
+  void findCourse_検索条件に一致する受講コースが取得できること() {
+    // 検索条件
+    var condition = new StudentSearchEntity(
+        null, null, null, null, null, null, null,
+        1, "開発系コース", null, null, List.of());
+
+    var courses = sut.findCourse(condition);
+
+    assertThat(courses).isNotEmpty();
+    assertThat(courses.getFirst().getCourseId()).isEqualTo(1);
+  }
+
+  @Test
+  void findStatus_検索条件に一致するステータスが取得できること() {
+    // 検索条件
+    var condition = new StudentSearchEntity(
+        null, null, null, null, null, null, null,
+        null, null, null, null, List.of(Status.受講中));
+
+    var statuses = sut.findStatus(condition);
+
+    assertThat(statuses).isNotEmpty();
+    assertThat(statuses.getFirst().getStatus()).isEqualTo(Status.受講中);
   }
 
 }

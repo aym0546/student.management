@@ -3,7 +3,6 @@ package raisetech.student.management.controller.converter;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
-import java.util.stream.Collectors;
 import org.springframework.stereotype.Component;
 import raisetech.student.management.data.CourseStatus;
 import raisetech.student.management.data.Student;
@@ -28,21 +27,23 @@ public class StudentConverter {
       List<CourseDetail> courseDetails) {
     List<StudentDetail> studentDetails = new ArrayList<>();
 
-    students.forEach(student -> {
+    for (Student student : students) {
+      // student == nullの場合はスキップ
+      if (student == null) {
+        continue;
+      }
 
-      StudentDetail studentDetail = new StudentDetail();
-
-      studentDetail.setStudent(student);
-
+      // studentIdに紐づくcourseDetailsフィルタリング
       List<CourseDetail> convertCourseDetails = courseDetails.stream()
           .filter(courseDetail -> student.getStudentId()
               .equals(courseDetail.getCourse().getStudentId()))
-          .collect(Collectors.toList());
+          .toList();
 
-      studentDetail.setCourseDetailList(convertCourseDetails);
-
-      studentDetails.add(studentDetail);
-    });
+      // コース情報がない場合は追加しない
+      if (!convertCourseDetails.isEmpty()) {
+        studentDetails.add(new StudentDetail(student, convertCourseDetails));
+      }
+    }
     return studentDetails;
   }
 
@@ -58,16 +59,25 @@ public class StudentConverter {
     List<CourseDetail> courseDetails = new ArrayList<>();
 
     for (StudentsCourse course : courses) {
+      // course == null の場合はスキップ
+      if (course == null) {
+        continue;
+      }
+
       var courseDetail = new CourseDetail();
       courseDetail.setCourse(course);
 
       for (CourseStatus status : statuses) {
-        if (Objects.equals(course.getAttendingId(), status.getAttendingId())) {
+        if (status != null && Objects.equals(course.getAttendingId(), status.getAttendingId())) {
           courseDetail.setStatus(status);
           break;
         }
       }
-      courseDetails.add(courseDetail);
+      
+      // CourseStatusがnullでない場合のみ追加
+      if (courseDetail.getStatus() != null) {
+        courseDetails.add(courseDetail);
+      }
     }
     return courseDetails;
   }

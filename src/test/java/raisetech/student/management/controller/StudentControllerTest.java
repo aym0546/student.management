@@ -78,16 +78,48 @@ class StudentControllerTest {
     );
 
     studentDetail = new StudentDetail(student, List.of(courseDetail1, courseDetail2));
+
+    Mockito.reset(service); // モックをリセット
+
   }
 
   @Test
-  void 受講生一覧表示が実行でき_空のリストが返ってくること() throws Exception {
+  void 詳細検索が実行でき_該当する受講生情報が返ってくること() throws Exception {
+    // 検索条件設定
+    var searchForm = new StudentSearchForm(
+        "テスト", 0, 100, null, null, null, null, null, null, null, null, null);
 
-    mockMvc.perform(MockMvcRequestBuilders.get("/students"))
-        .andExpect(status().isOk())
-        .andExpect(content().json("[]"));
+    when(service.getStudentList(Mockito.any())).thenReturn(List.of(studentDetail));
 
-    verify(service, times(1)).getStudentList();
+    // リクエストを想定
+    mockMvc.perform(MockMvcRequestBuilders.get("/students")
+            .param("fullName", searchForm.name())  // record型のためフィールド名でアクセス
+            .contentType(MediaType.APPLICATION_JSON))
+        .andExpect(status().isOk())  // ステータスコード200
+        .andExpect(
+            content().contentTypeCompatibleWith(MediaType.APPLICATION_JSON))  // JSONレスポンスであること
+        .andExpect(jsonPath("$[0].student.studentId").value(999))  // 受講生IDが正しい
+        .andExpect(jsonPath("$[0].student.fullName").value("テスト花子"));  // 受講生名が正しい
+
+    // serviceメソッドが呼ばれたことを確認
+    verify(service, times(1)).getStudentList(Mockito.any());
+  }
+
+  @Test
+  void 詳細検索が実行でき_該当する受講生がいない場合() throws Exception {
+    // 検索条件設定
+    var searchForm = new StudentSearchForm(
+        "存在しない名前", 0, 100, null, null, null, null, null, null, null, null, null);
+
+    when(service.getStudentList(Mockito.any())).thenReturn(List.of());
+
+    // リクエストの想定
+    mockMvc.perform(MockMvcRequestBuilders.get("/students")
+            .param("fullName", searchForm.name())
+            .contentType(MediaType.APPLICATION_JSON))
+        .andExpect(status().isNotFound());  // ステータスコード404
+
+    verify(service, times(1)).getStudentList(Mockito.any());
   }
 
   @Test
