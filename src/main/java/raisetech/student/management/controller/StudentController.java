@@ -58,7 +58,7 @@ public class StudentController {
   @GetMapping("/students")  // GET /students?__=__
   public ResponseEntity<List<StudentDetail>> searchStudents(StudentSearchForm searchForm) {
 
-    List<StudentDetail> studentDetails = service.getStudentList(searchForm.toEntity());
+    List<StudentDetail> studentDetails = service.getStudentList(searchForm.toDTO());
 
     if (studentDetails.isEmpty()) {
       return ResponseEntity.status(HttpStatus.NOT_FOUND).build();

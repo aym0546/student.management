@@ -5,7 +5,7 @@ import java.time.LocalDate;
 import java.util.List;
 import java.util.Optional;
 import raisetech.student.management.data.CourseStatus.Status;
-import raisetech.student.management.service.StudentSearchEntity;
+import raisetech.student.management.dto.StudentSearchDTO;
 
 @Schema(description = "検索フォーム")
 public record StudentSearchForm(
@@ -48,7 +48,7 @@ public record StudentSearchForm(
 
 ) {
 
-  public StudentSearchEntity toEntity() {
+  public StudentSearchDTO toDTO() {
     // 年齢指定をbirthDateに置き換え
     var today = LocalDate.now();
     var startBirthDate =
@@ -59,15 +59,15 @@ public record StudentSearchForm(
             : null;
 
     // statusについて、List<String>からList<Status>に変換
-    var statusEntityList = Optional.ofNullable(status())
+    var statusDTOList = Optional.ofNullable(status())
         .map(statusList -> statusList.stream().map(Status::valueOf).toList())
         .orElse(List.of());  // statusがnullの時は空リストList.of()を返す
 
-    // リクエストデータをStudentSearchFormからStudentSearchEntityに詰め替え
-    return new StudentSearchEntity(
+    // リクエストデータをStudentSearchFormからStudentSearchDTOに詰め替え
+    return new StudentSearchDTO(
         name(), startBirthDate, endBirthDate, area(), email(), gender(), remark(), courseId(),
         category(),
-        startDate(), endDate(), statusEntityList);
+        startDate(), endDate(), statusDTOList);
 
   }
 

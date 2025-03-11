@@ -28,8 +28,8 @@ public class StudentConverter {
     List<StudentDetail> studentDetails = new ArrayList<>();
 
     for (Student student : students) {
-      // student == nullの場合はスキップ
-      if (student == null) {
+      // student が null の場合はスキップ
+      if (Objects.isNull(student)) {
         continue;
       }
 
@@ -73,7 +73,7 @@ public class StudentConverter {
           break;
         }
       }
-      
+
       // CourseStatusがnullでない場合のみ追加
       if (courseDetail.getStatus() != null) {
         courseDetails.add(courseDetail);

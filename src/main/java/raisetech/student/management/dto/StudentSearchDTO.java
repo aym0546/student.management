@@ -1,4 +1,4 @@
-package raisetech.student.management.service;
+package raisetech.student.management.dto;
 
 import io.swagger.v3.oas.annotations.media.Schema;
 import java.time.LocalDate;
@@ -6,7 +6,7 @@ import java.util.List;
 import raisetech.student.management.data.CourseStatus.Status;
 
 @Schema(description = "検索条件オブジェクト")
-public record StudentSearchEntity(
+public record StudentSearchDTO(
 
     @Schema(description = "氏名・ふりがな・ニックネームの検索条件", example = "たろ")
     String name,

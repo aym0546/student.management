@@ -23,6 +23,7 @@ import raisetech.student.management.data.Student;
 import raisetech.student.management.data.StudentsCourse;
 import raisetech.student.management.domain.CourseDetail;
 import raisetech.student.management.domain.StudentDetail;
+import raisetech.student.management.dto.StudentSearchDTO;
 import raisetech.student.management.repository.StudentRepository;
 
 @ExtendWith(MockitoExtension.class)
@@ -102,7 +103,7 @@ class StudentServiceTest {
 
     // 実行
     List<StudentDetail> actual = sut.getStudentList(
-        new StudentSearchEntity(null, LocalDate.of(1900, 1, 1), LocalDate.of(2500, 1, 1), null,
+        new StudentSearchDTO(null, LocalDate.of(1900, 1, 1), LocalDate.of(2500, 1, 1), null,
             null, null, null, null, null, null, null, null));
 
     // 検証

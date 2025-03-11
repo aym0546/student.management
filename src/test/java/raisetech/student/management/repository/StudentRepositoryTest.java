@@ -13,7 +13,7 @@ import raisetech.student.management.data.CourseStatus;
 import raisetech.student.management.data.CourseStatus.Status;
 import raisetech.student.management.data.Student;
 import raisetech.student.management.data.StudentsCourse;
-import raisetech.student.management.service.StudentSearchEntity;
+import raisetech.student.management.dto.StudentSearchDTO;
 
 @MybatisTest
 class StudentRepositoryTest {
@@ -176,7 +176,7 @@ class StudentRepositoryTest {
   @Test
   void findStudent_検索条件に一致する受講生が取得できること() {
     // 検索条件
-    var condition = new StudentSearchEntity(
+    var condition = new StudentSearchDTO(
         "中村", LocalDate.of(1999, 12, 31), LocalDate.of(2000, 12, 31), null, null, null, null,
         null, null, null, null, List.of());
 
@@ -189,7 +189,7 @@ class StudentRepositoryTest {
   @Test
   void findCourse_検索条件に一致する受講コースが取得できること() {
     // 検索条件
-    var condition = new StudentSearchEntity(
+    var condition = new StudentSearchDTO(
         null, null, null, null, null, null, null,
         1, "開発系コース", null, null, List.of());
 
@@ -202,7 +202,7 @@ class StudentRepositoryTest {
   @Test
   void findStatus_検索条件に一致するステータスが取得できること() {
     // 検索条件
-    var condition = new StudentSearchEntity(
+    var condition = new StudentSearchDTO(
         null, null, null, null, null, null, null,
         null, null, null, null, List.of(Status.受講中));
 
