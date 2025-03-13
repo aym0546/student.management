@@ -5,6 +5,7 @@ import org.apache.ibatis.annotations.Mapper;
 import raisetech.student.management.data.CourseStatus;
 import raisetech.student.management.data.Student;
 import raisetech.student.management.data.StudentsCourse;
+import raisetech.student.management.dto.StudentSearchDTO;
 
 /**
  * 受講生情報を扱うRepository（インターフェース） 受講生テーブルと受講生コース情報テーブルと紐づいています。 全件検索や単一条件での検索、コース情報の検索が行えるクラスです。
@@ -99,4 +100,27 @@ public interface StudentRepository {
    */
   int updateCourseStatus(CourseStatus courseStatus);
 
+  /**
+   * 【受講生情報の詳細検索】
+   *
+   * @param condition リクエスト（検索条件）
+   * @return 該当する受講生リスト
+   */
+  List<Student> findStudent(StudentSearchDTO condition);
+
+  /**
+   * 【受講コース情報の詳細検索】
+   *
+   * @param condition リクエスト（検索条件）
+   * @return 該当するコース情報リスト
+   */
+  List<StudentsCourse> findCourse(StudentSearchDTO condition);
+
+  /**
+   * 【ステータス情報の詳細検索】
+   *
+   * @param condition リクエスト（検索条件）
+   * @return 該当するステータス情報リスト
+   */
+  List<CourseStatus> findStatus(StudentSearchDTO condition);
 }

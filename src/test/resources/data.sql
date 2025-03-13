@@ -25,3 +25,13 @@ INSERT INTO course_status (attending_id, status) VALUES
 (5, '本申し込み'),
 (6, '本申し込み'),
 (7, '仮申し込み');
+
+-- courses テーブルにデータを挿入　
+INSERT INTO courses (course_name, category, duration, is_closed, created_at, updated_at) VALUES
+('Javaコース', '開発系コース', 6, FALSE, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP),
+('AWSコース', '開発系コース', 6, FALSE, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP),
+('WordPressコース', '制作系コース', 6, FALSE, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP),
+('デザインコース', '制作系コース', 6, FALSE, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP),
+('webマーケティングコース', '制作系コース', 6, FALSE, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP),
+('映像制作コース', '制作系コース', 6, FALSE, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP),
+('フロントエンドコース', '開発系コース', 6, FALSE, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP);

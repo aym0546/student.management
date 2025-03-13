@@ -14,6 +14,7 @@ import raisetech.student.management.data.Student;
 import raisetech.student.management.data.StudentsCourse;
 import raisetech.student.management.domain.CourseDetail;
 import raisetech.student.management.domain.StudentDetail;
+import raisetech.student.management.dto.StudentSearchDTO;
 import raisetech.student.management.exception.NoDataException;
 import raisetech.student.management.exception.ProcessFailedException;
 import raisetech.student.management.repository.StudentRepository;
@@ -41,14 +42,17 @@ public class StudentService {
   }
 
   /**
-   * 【受講生一覧表示】 全件検索のため、条件指定は行わない。
+   * 【詳細情報検索】 リクエストに含まれるデータに基づいて検索を行う。
    *
-   * @return 受講生詳細情報一覧（全件）
+   * @param searchDTO リクエストに含まれる検索データ
+   * @return 該当する受講生詳細情報のリスト
    */
-  public List<StudentDetail> getStudentList() {
-    List<Student> studentList = repository.displayStudent();
-    List<StudentsCourse> studentsCourses = repository.displayCourse();
-    List<CourseStatus> courseStatuses = repository.displayStatus();
+  public List<StudentDetail> getStudentList(StudentSearchDTO searchDTO) {
+
+    List<Student> studentList = repository.findStudent(searchDTO);
+    List<StudentsCourse> studentsCourses = repository.findCourse(searchDTO);
+    List<CourseStatus> courseStatuses = repository.findStatus(searchDTO);
+
     return converter.convertStudentDetails(studentList,
         converter.convertCourseDetails(studentsCourses, courseStatuses));
   }

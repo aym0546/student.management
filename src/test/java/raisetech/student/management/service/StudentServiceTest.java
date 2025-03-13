@@ -23,6 +23,7 @@ import raisetech.student.management.data.Student;
 import raisetech.student.management.data.StudentsCourse;
 import raisetech.student.management.domain.CourseDetail;
 import raisetech.student.management.domain.StudentDetail;
+import raisetech.student.management.dto.StudentSearchDTO;
 import raisetech.student.management.repository.StudentRepository;
 
 @ExtendWith(MockitoExtension.class)
@@ -93,19 +94,21 @@ class StudentServiceTest {
     // expectedを用意
     List<StudentDetail> expected = new ArrayList<>();
     // whenのメソッドを呼び出した場合に、thenReturnを返すようMockを設定
-    when(repository.displayStudent()).thenReturn(studentList);
-    when(repository.displayCourse()).thenReturn(studentCourseList);
-    when(repository.displayStatus()).thenReturn(courseStatusList);
+    when(repository.findStudent(any())).thenReturn(studentList);
+    when(repository.findCourse(any())).thenReturn(studentCourseList);
+    when(repository.findStatus(any())).thenReturn(courseStatusList);
     when(converter.convertCourseDetails(studentCourseList, courseStatusList)).thenReturn(
         courseDetailList);
     when(converter.convertStudentDetails(studentList, courseDetailList)).thenReturn(expected);
 
     // 実行
-    List<StudentDetail> actual = sut.getStudentList();
+    List<StudentDetail> actual = sut.getStudentList(
+        new StudentSearchDTO(null, LocalDate.of(1900, 1, 1), LocalDate.of(2500, 1, 1), null,
+            null, null, null, null, null, null, null, null));
 
     // 検証
-    verify(repository, times(1)).displayStudent();
-    verify(repository, times(1)).displayCourse();
+    verify(repository, times(1)).findStudent(any());
+    verify(repository, times(1)).findCourse(any());
     verify(converter, times(1)).convertCourseDetails(studentCourseList, courseStatusList);
     verify(converter, times(1)).convertStudentDetails(studentList, courseDetailList);
 

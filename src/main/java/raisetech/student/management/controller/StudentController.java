@@ -44,14 +44,26 @@ public class StudentController {
   }
 
   /**
-   * 【受講生一覧表示】 全件検索のため、条件指定は行わない。
+   * 【詳細情報検索】 リクエストデータに基づいて検索を行う。
    *
-   * @return 受講生一覧（全件）
+   * @param searchForm リクエスト情報
+   * @return 該当する受講生詳細情報のリスト
    */
-  @Operation(summary = "一覧表示", description = "受講生の一覧を表示します。")
-  @GetMapping("/students")
-  public List<StudentDetail> getStudent() {
-    return service.getStudentList();
+  @Operation(summary = "詳細検索", description = "クエリパラメータから取得した条件で検索を行います。")
+  @ApiResponses(value = {
+      @ApiResponse(responseCode = "200", description = "成功"),
+      @ApiResponse(responseCode = "404", description = "該当する受講生が見つかりません"),
+      @ApiResponse(responseCode = "500", description = "サーバーエラー")
+  })
+  @GetMapping("/students")  // GET /students?__=__
+  public ResponseEntity<List<StudentDetail>> searchStudents(StudentSearchForm searchForm) {
+
+    List<StudentDetail> studentDetails = service.getStudentList(searchForm.toDTO());
+
+    if (studentDetails.isEmpty()) {
+      return ResponseEntity.status(HttpStatus.NOT_FOUND).build();
+    }
+    return ResponseEntity.ok(studentDetails);
   }
 
   /**
@@ -82,7 +94,7 @@ public class StudentController {
    * @param studentId 受講生ID
    * @return 受講生情報
    */
-  @Operation(summary = "受講生検索", description = "指定された受講生IDから情報を取得します。")
+  @Operation(summary = "受講生検索", description = "パスパラメータで指定された受講生IDで検索を行います。")
   @ApiResponses(value = {
       @ApiResponse(responseCode = "200", description = "成功"),
       @ApiResponse(responseCode = "404", description = "該当する受講生が見つかりません"),
