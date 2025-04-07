@@ -86,19 +86,25 @@ erDiagram
 | 14 | コースマスタの更新 |
 | 15 | コースマスタの削除 |
 
+### データベース
+![image](https://github.com/user-attachments/assets/cbf6fd0e-a676-4b0e-baf3-bba38a00f459)
+
 # 何ができるのか
 
-### 受講生情報の管理
+### 受講生の詳細検索
+<img width="871" alt="image" src="https://github.com/user-attachments/assets/919ebbc3-e04d-461b-97a2-ffdc5f56a14b" />
 
-Postmanなどの画像で説明
+### コース情報の詳細検索
+<img width="871" alt="image" src="https://github.com/user-attachments/assets/44835c39-67d6-430b-995f-2a7b95e63e88" />
 
-### コースマスタの管理
+### ステータス情報の詳細検索
+<img width="871" alt="image" src="https://github.com/user-attachments/assets/99e95350-ece8-4645-8ac1-da872c8917fd" />
 
-Postmanなどの画像で説明
+### 受講生プロフィール・コース情報・ステータス複合検索
+<img width="871" alt="image" src="https://github.com/user-attachments/assets/40b3d172-797e-4a14-b7e5-5894747c460d" />
 
-機能について箇条書き＋画像（GIF）で説明
-
-バリデーションも明示
+### クエリパラメータ指定なしの詳細検索（全件検索）
+<img width="871" alt="image" src="https://github.com/user-attachments/assets/d601c3e3-41b0-473f-8c87-ca2ea4b6114a" />
 
 ## 工夫したところ（設計面）
 
