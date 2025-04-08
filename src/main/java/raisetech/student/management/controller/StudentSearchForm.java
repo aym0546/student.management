@@ -48,6 +48,11 @@ public record StudentSearchForm(
 
 ) {
 
+  /**
+   * 【検索フォームStudentSearchFormから検索条件オブジェクトStudentSearchDTOに変換】
+   *
+   * @return 検索条件（StudentSearchDTO）
+   */
   public StudentSearchDTO toDTO() {
     // 年齢指定をbirthDateに置き換え
     var today = LocalDate.now();

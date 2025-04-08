@@ -1,7 +1,9 @@
 package raisetech.student.management.service;
 
+import jakarta.validation.Valid;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
@@ -9,6 +11,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import raisetech.student.management.controller.converter.StudentConverter;
+import raisetech.student.management.data.Course;
 import raisetech.student.management.data.CourseStatus;
 import raisetech.student.management.data.Student;
 import raisetech.student.management.data.StudentsCourse;
@@ -70,8 +73,9 @@ public class StudentService {
     if (Objects.isNull(student)) {
       throw new NoDataException("該当する受講生が見つかりません。ID：" + studentId);
     }
-    // 受講生情報のstudentIDに基づいてコース情報を検索
-    List<StudentsCourse> studentsCourses = repository.searchStudentsCourses(student.getStudentId());
+    // 受講生情報のstudentIDに基づいてコース情報を検索（nullの場合は空リスト）
+    List<StudentsCourse> studentsCourses = Optional.ofNullable(
+        repository.searchStudentsCourses(student.getStudentId())).orElse(Collections.emptyList());
     // コース情報のattendingIDに基づいて受講状況を検索、受講状況と紐付け
     List<CourseDetail> courseDetails = new ArrayList<>();  // 空の受講コース状況リストを作成
     for (StudentsCourse course : studentsCourses) {
@@ -103,6 +107,9 @@ public class StudentService {
     int registeredCourse = 0;
     int registeredStatus = 0;
 
+    // 現在日時を取得
+    LocalDateTime now = LocalDateTime.now();
+
     // studentDetailのcourseDetailの数だけコース情報・ステータス情報を登録する
     for (CourseDetail courseDetail : studentDetail.getCourseDetailList()) {
       // コース情報の登録
@@ -110,12 +117,24 @@ public class StudentService {
           course -> {
             // courseのstudent_idは↑で自動生成・登録されたものを使用
             course.setStudentId(studentDetail.getStudent().getStudentId());
-            // start_dateとend_dateは現在日時とその1年後を取得
-            course.setStartDate(LocalDateTime.now());
-            course.setEndDate(LocalDateTime.now().plusYears(1));
+            // start_dateは現在日時に設定
+            course.setStartDate(now);
+            // courseIdに対応するdurationを取得し、end_dateを計算
+            int duration = repository.displayCourseMaster()
+                .stream()
+                .filter(c -> c.getCourseId() == course.getCourseId())
+                .map(Course::getDuration)
+                .findFirst()
+                .orElse(0);
+            course.setEndDate(now.plusMonths(duration));
           }
       );
       registeredCourse += repository.registerStudentsCourses(courseDetail.getCourse());
+
+      // コース情報の登録が行われなかった場合に例外をthrow -> 処理中断
+      if (registeredCourse == 0) {
+        throw new ProcessFailedException("受講コース情報の登録に失敗しました。");
+      }
 
       // ステータス情報の登録
       Optional.ofNullable(courseDetail.getStatus()).ifPresent(
@@ -125,10 +144,8 @@ public class StudentService {
       registeredStatus += repository.registerCourseStatus(courseDetail.getStatus());
     }
 
-    // コース情報・ステータス情報の登録が行われなかった場合にexをthrow -> 処理中断
-    if (registeredCourse == 0) {
-      throw new ProcessFailedException("受講コース情報の登録に失敗しました。");
-    } else if (registeredStatus == 0) {
+    // ステータス情報の登録が行われなかった場合に例外をthrow -> 処理中断
+    if (registeredStatus == 0) {
       throw new ProcessFailedException("受講ステータス情報の登録に失敗しました。");
     }
 
@@ -194,4 +211,72 @@ public class StudentService {
 
   }
 
+  /**
+   * 【コースマスタの全件取得】
+   *
+   * @return コースマスタリスト（全件）
+   */
+  public List<Course> getCourseList() {
+    return repository.displayCourseMaster();
+  }
+
+  /**
+   * 【コースマスタの新規作成】
+   *
+   * @param course 入力情報（マスタ情報）
+   */
+  public void registerCourseMaster(Course course) {
+    repository.registerCourseMaster(course);
+  }
+
+  /**
+   * 【コースマスタのID検索】
+   *
+   * @param courseId 検索ID
+   * @return 該当するコースマスタ
+   */
+  public Course getCourseMaster(Integer courseId) {
+    return repository.searchCourseMaster(courseId);
+  }
+
+  /**
+   * 【コースマスタの更新】
+   *
+   * @param course 入力された更新情報（コースマスタ）
+   */
+  public void updateCourseMaster(Course course) {
+
+    // 事前に対象のコースマスタを検索（なければ例外throw）
+    Integer targetCourseId = course.getCourseId();
+    Course courseExist = repository.searchCourseMaster(targetCourseId);
+    if (courseExist == null) {
+      throw new NoDataException(
+          "更新対象のコースマスタが見つかりません。[ID: " + targetCourseId + " ]"
+      );
+    }
+
+    int updateMasterData = repository.updateCourseMaster(course);
+
+    // 更新されなかった場合に例外をスルー
+    if (updateMasterData == 0) {
+      throw new ProcessFailedException("コースマスタは更新されませんでした。");
+    }
+
+  }
+
+  /**
+   * 【コースマスタの削除】
+   *
+   * @param courseId 削除対象のコースID
+   */
+  public void deleteCourseMaster(@Valid Integer courseId) {
+
+    // 事前に対象のコースマスタを検索（なければ例外throw）
+    Course courseExist = repository.searchCourseMaster(courseId);
+    if (courseExist == null) {
+      throw new NoDataException("削除対象が見つかりません。[ID: " + courseId + " ]");
+    }
+
+    repository.deleteCourseMaster(courseId);
+  }
 }

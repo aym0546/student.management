@@ -1,5 +1,6 @@
 package raisetech.student.management.service;
 
+import java.sql.Timestamp;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
@@ -7,16 +8,22 @@ import java.util.List;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.Mock;
 import static org.mockito.Mockito.any;
+import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 import org.mockito.junit.jupiter.MockitoExtension;
 import raisetech.student.management.controller.converter.StudentConverter;
+import raisetech.student.management.data.Course;
+import raisetech.student.management.data.Course.CourseCategory;
+import raisetech.student.management.data.Course.CourseName;
 import raisetech.student.management.data.CourseStatus;
 import raisetech.student.management.data.CourseStatus.Status;
 import raisetech.student.management.data.Student;
@@ -24,6 +31,8 @@ import raisetech.student.management.data.StudentsCourse;
 import raisetech.student.management.domain.CourseDetail;
 import raisetech.student.management.domain.StudentDetail;
 import raisetech.student.management.dto.StudentSearchDTO;
+import raisetech.student.management.exception.NoDataException;
+import raisetech.student.management.exception.ProcessFailedException;
 import raisetech.student.management.repository.StudentRepository;
 
 @ExtendWith(MockitoExtension.class)
@@ -102,7 +111,7 @@ class StudentServiceTest {
     when(converter.convertStudentDetails(studentList, courseDetailList)).thenReturn(expected);
 
     // 実行
-    List<StudentDetail> actual = sut.getStudentList(
+    var actual = sut.getStudentList(
         new StudentSearchDTO(null, LocalDate.of(1900, 1, 1), LocalDate.of(2500, 1, 1), null,
             null, null, null, null, null, null, null, null));
 
@@ -118,7 +127,7 @@ class StudentServiceTest {
   }
 
   @Test
-  void 受講生詳細情報の検索機能が動作していること() {
+  void 受講生詳細情報の検索機能_リポジトリを適切に呼び出し結果が返ること() {
     // Mock設定
     when(repository.searchStudent(studentId)).thenReturn(student);
     when(repository.searchStudentsCourses(studentId)).thenReturn(courseList);
@@ -126,7 +135,7 @@ class StudentServiceTest {
     when(repository.searchCourseStatus(attendingId2)).thenReturn(status2);
 
     // 実行
-    StudentDetail actual = sut.searchStudent(studentId);
+    var actual = sut.searchStudent(studentId);
 
     // 検証
     verify(repository, times(1)).searchStudent(studentId);
@@ -143,7 +152,44 @@ class StudentServiceTest {
   }
 
   @Test
-  void 受講生情報の登録機能が動作していること() {
+  void 受講生詳細情報の検索機能_存在しない受講生を検索すると例外をスローすること() {
+    // searchStudentメソッドにnullを返す
+    when(repository.searchStudent(studentId)).thenReturn(null);
+
+    // 実行時に例外をthrowすることを検証
+    assertThrows(NoDataException.class, () -> sut.searchStudent(studentId));
+  }
+
+  @Test
+  void 受講生詳細情報の検索機能_受講生が存在するがコース情報がない場合_空リストを返すこと() {
+    when(repository.searchStudent(studentId)).thenReturn(student);
+    when(repository.searchStudentsCourses(studentId)).thenReturn(null);
+
+    var actual = sut.searchStudent(studentId);
+
+    assertNotNull(actual);
+    assertEquals(student, actual.getStudent());
+    assertTrue(actual.getCourseDetailList().isEmpty());
+  }
+
+  @Test
+  void 受講生詳細情報の検索機能_受講コースが複数の場合_正しくリストされること() {
+    when(repository.searchStudent(studentId)).thenReturn(student);
+    when(repository.searchStudentsCourses(studentId)).thenReturn(courseList);
+    when(repository.searchCourseStatus(attendingId1)).thenReturn(status1);
+    when(repository.searchCourseStatus(attendingId2)).thenReturn(status2);
+
+    var actual = sut.searchStudent(studentId);
+
+    assertNotNull(actual);
+    assertEquals(student, actual.getStudent());
+    assertEquals(2, actual.getCourseDetailList().size());
+    assertEquals(status1, actual.getCourseDetailList().get(0).getStatus());
+    assertEquals(status2, actual.getCourseDetailList().get(1).getStatus());
+  }
+
+  @Test
+  void 受講生情報の登録機能が動作し_受講生情報_コース情報_ステータス情報すべての登録に成功すること() {
     // Mock設定
     when(repository.registerStudent(student)).thenReturn(1);
     when(repository.registerStudentsCourses(any(StudentsCourse.class))).thenReturn(1);
@@ -164,7 +210,44 @@ class StudentServiceTest {
   }
 
   @Test
-  void 受講生情報の更新機能が動作していること() {
+  void 受講生情報の登録機能_受講生情報の登録に失敗すると例外をスローすること() {
+    // registerStudentが失敗（0を返す）
+    when(repository.registerStudent(student)).thenReturn(0);
+
+    // 例外がthrowされることを確認
+    assertThrows(ProcessFailedException.class, () -> sut.registerStudent(studentDetail));
+
+    // 以降の処理に進まないことを確認
+    verify(repository, never()).registerStudentsCourses(any());
+    verify(repository, never()).registerCourseStatus(any());
+  }
+
+  @Test
+  void 受講生情報の登録機能_コース情報の登録に失敗すると例外をスローすること() {
+    // registerStudentは成功（1を返す）し、registerStudentsCourseが失敗（0を返す）
+    when(repository.registerStudent(student)).thenReturn(1);
+    when(repository.registerStudentsCourses(course1)).thenReturn(0);
+
+    // 例外がthrowされることを確認
+    assertThrows(ProcessFailedException.class, () -> sut.registerStudent(studentDetail));
+
+    // 以降の処理に進まないことを確認
+    verify(repository, never()).registerCourseStatus(any());
+  }
+
+  @Test
+  void 受講生情報の登録機能_ステータス情報の登録に失敗すると例外をスローすること() {
+    // registerStudent・registerStudentCourseは成功、registerCourseStatusが失敗
+    when(repository.registerStudent(student)).thenReturn(1);
+    when(repository.registerStudentsCourses(course1)).thenReturn(1);
+    when(repository.registerCourseStatus(status1)).thenReturn(0);
+
+    // 例外がthrowされることを確認
+    assertThrows(ProcessFailedException.class, () -> sut.registerStudent(studentDetail));
+  }
+
+  @Test
+  void 受講生情報の更新機能が動作し_受講生情報_コース情報_ステータス情報すべての更新に成功すること() {
     // 事前準備
     // 更新情報 updateStudentDetail
     var updateStudent = new Student(
@@ -220,5 +303,58 @@ class StudentServiceTest {
         .ignoringFields("studentsCourses.startDate", "studentsCourses.endDate")
         .isEqualTo(updateStudentDetail)  // 期待値との比較
         .isNotEqualTo(studentDetail);
+  }
+
+  @Test
+  void コースマスタの全件取得_リポジトリが適切に呼び出せていること() {
+    List<Course> expected = new ArrayList<>();
+    when(repository.displayCourseMaster()).thenReturn(expected);
+    List<Course> actual = sut.getCourseList();
+    assertNotNull(actual);
+    assertEquals(expected, actual);
+  }
+
+  @Test
+  void コースマスタの新規作成_リポジトリを適切に呼び出し引数を渡せていること() {
+    var master = new Course(CourseName.Javaコース, CourseCategory.開発系コース, 999);
+    sut.registerCourseMaster(master);
+    verify(repository, times(1)).registerCourseMaster(master);
+  }
+
+  @Test
+  void コースマスタのID検索_リポジトリを適切に呼び出し引数を渡せていること() {
+    sut.getCourseMaster(2);
+    verify(repository, times(1)).searchCourseMaster(2);
+  }
+
+  @Test
+  void コースマスタの削除_リポジトリを適切に呼び出し引数を渡せていること() {
+    var courseId = 1;
+    var master = new Course(courseId, CourseName.Javaコース, CourseCategory.開発系コース, 999,
+        false, Timestamp.valueOf(LocalDateTime.now()),
+        Timestamp.valueOf(LocalDateTime.now().plusMonths(6)));
+    when(repository.searchCourseMaster(courseId)).thenReturn(master);
+
+    sut.deleteCourseMaster(courseId);
+
+    verify(repository, times(1)).searchCourseMaster(courseId);
+    verify(repository, times(1)).deleteCourseMaster(courseId);
+  }
+
+  @Test
+  void コースマスタの削除_存在しないIDの場合_例外が発生すること() {
+
+    // 存在しないIDを検索するとnullを返す
+    Integer courseId = 999;
+    when(repository.searchCourseMaster(courseId)).thenReturn(null);
+
+    // 実行によりNoDataExceptionが発生することを確認
+    NoDataException exception = assertThrows(
+        NoDataException.class, () -> sut.deleteCourseMaster(courseId)
+    );
+    assertThat(exception.getMessage()).isEqualTo("削除対象が見つかりません。[ID: 999 ]");
+
+    // deleteCourseMasterメソッドが一度も呼ばれていないことを確認
+    verify(repository, never()).deleteCourseMaster(any());
   }
 }

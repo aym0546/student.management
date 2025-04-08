@@ -10,7 +10,7 @@ import raisetech.student.management.dto.StudentSearchDTO;
 class StudentSearchFormTest {
 
   @Test
-  void toDTO_すべての値が正しく変換されること() {
+  void DTOへの変換メソッド_すべての値が正しく変換されること() {
     // 入力データの準備
     var form = new StudentSearchForm("テスト", 25, 30,
         "テスト", "test@email.com", "Other",
@@ -33,7 +33,7 @@ class StudentSearchFormTest {
   }
 
   @Test
-  void toDTO_年齢指定なしの場合_生年月日指定がNullになること() {
+  void DTOへの変換メソッド_年齢指定なしの場合_生年月日指定がNullになること() {
     // 入力データの準備
     var form = new StudentSearchForm("テスト", null, null,
         "テスト", "test@email.com", "Other",
@@ -47,7 +47,7 @@ class StudentSearchFormTest {
   }
 
   @Test
-  void toDTO_statusがNullの場合_空リストになること() {
+  void DTOへの変換メソッド_statusがNullの場合_空リストになること() {
     var form = new StudentSearchForm("ステータスがnullのテスト", 0, 100,
         "テスト", "test@email.com", "Other",
         "", 1, "開発系コース", LocalDate.of(2025, 1, 1), LocalDate.of(2025, 7, 1), null);
