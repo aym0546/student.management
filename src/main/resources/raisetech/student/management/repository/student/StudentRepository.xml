@@ -133,32 +133,32 @@
     </where>
   </select>
 
-  <!-- コースマスタの全件取得 -->
-  <select id="displayCourseMaster" resultType="raisetech.student.management.data.Course">
-    SELECT * FROM courses
-  </select>
+  <!--  &lt;!&ndash; コースマスタの全件取得 &ndash;&gt;-->
+  <!--  <select id="displayCourseMaster" resultType="raisetech.student.management.data.Course">-->
+  <!--    SELECT * FROM courses-->
+  <!--  </select>-->
 
-  <!-- コースマスタの新規作成 -->
-  <insert id="registerCourseMaster" useGeneratedKeys="true" keyProperty="courseId">
-    INSERT INTO courses(course_name, category, duration)
-    VALUES (#{courseName}, #{category}, #{duration})
-  </insert>
+  <!--  &lt;!&ndash; コースマスタの新規作成 &ndash;&gt;-->
+  <!--  <insert id="registerCourseMaster" useGeneratedKeys="true" keyProperty="courseId">-->
+  <!--    INSERT INTO courses(course_name, category, duration)-->
+  <!--    VALUES (#{courseName}, #{category}, #{duration})-->
+  <!--  </insert>-->
 
-  <!-- コースマスタのID検索 -->
-  <select id="searchCourseMaster" resultType="raisetech.student.management.data.Course">
-    SELECT * FROM courses WHERE course_id = #{courseId}
-  </select>
+  <!--  &lt;!&ndash; コースマスタのID検索 &ndash;&gt;-->
+  <!--  <select id="searchCourseMaster" resultType="raisetech.student.management.data.Course">-->
+  <!--    SELECT * FROM courses WHERE course_id = #{courseId}-->
+  <!--  </select>-->
 
-  <!-- コースマスタの更新 -->
-  <update id="updateCourseMaster">
-    UPDATE courses
-    SET course_name = #{courseName}, category = #{category}, duration = #{duration}, is_closed =
-    #{isClosed} WHERE course_id = #{courseId}
-  </update>
+  <!--  &lt;!&ndash; コースマスタの更新 &ndash;&gt;-->
+  <!--  <update id="updateCourseMaster">-->
+  <!--    UPDATE courses-->
+  <!--    SET course_name = #{courseName}, category = #{category}, duration = #{duration}, is_closed =-->
+  <!--    #{isClosed} WHERE course_id = #{courseId}-->
+  <!--  </update>-->
 
-  <!-- コースマスタの削除 -->
-  <delete id="deleteCourseMaster">
-    DELETE FROM courses WHERE course_id = #{courseId}
-  </delete>
+  <!--  &lt;!&ndash; コースマスタの削除 &ndash;&gt;-->
+  <!--  <delete id="deleteCourseMaster">-->
+  <!--    DELETE FROM courses WHERE course_id = #{courseId}-->
+  <!--  </delete>-->
 
 </mapper>

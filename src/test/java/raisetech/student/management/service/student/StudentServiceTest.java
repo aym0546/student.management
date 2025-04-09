@@ -1,6 +1,5 @@
 package raisetech.student.management.service.student;
 
-import java.sql.Timestamp;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
@@ -21,9 +20,6 @@ import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 import org.mockito.junit.jupiter.MockitoExtension;
 import raisetech.student.management.converter.student.StudentConverter;
-import raisetech.student.management.data.Course;
-import raisetech.student.management.data.Course.CourseCategory;
-import raisetech.student.management.data.Course.CourseName;
 import raisetech.student.management.data.CourseStatus;
 import raisetech.student.management.data.CourseStatus.Status;
 import raisetech.student.management.data.Student;
@@ -33,17 +29,20 @@ import raisetech.student.management.domain.StudentDetail;
 import raisetech.student.management.dto.StudentSearchDTO;
 import raisetech.student.management.exception.NoDataException;
 import raisetech.student.management.exception.ProcessFailedException;
+import raisetech.student.management.repository.course.CourseRepository;
 import raisetech.student.management.repository.student.StudentRepository;
-import raisetech.student.management.service.course.StudentService;
 
 @ExtendWith(MockitoExtension.class)
 class StudentServiceTest {
 
   @Mock
-  private StudentRepository repository;
+  private StudentRepository studentRepository;
 
   @Mock
   private StudentConverter converter;
+
+  @Mock
+  private CourseRepository courseRepository;
 
   private StudentService sut;
 
@@ -65,7 +64,7 @@ class StudentServiceTest {
 
   @BeforeEach
   void before() {
-    sut = new StudentService(repository, converter);
+    sut = new StudentService(studentRepository, converter, courseRepository);
 
     studentId = 1;
     student = new Student(
@@ -104,9 +103,9 @@ class StudentServiceTest {
     // expectedを用意
     List<StudentDetail> expected = new ArrayList<>();
     // whenのメソッドを呼び出した場合に、thenReturnを返すようMockを設定
-    when(repository.findStudent(any())).thenReturn(studentList);
-    when(repository.findCourse(any())).thenReturn(studentCourseList);
-    when(repository.findStatus(any())).thenReturn(courseStatusList);
+    when(studentRepository.findStudent(any())).thenReturn(studentList);
+    when(studentRepository.findCourse(any())).thenReturn(studentCourseList);
+    when(studentRepository.findStatus(any())).thenReturn(courseStatusList);
     when(converter.convertCourseDetails(studentCourseList, courseStatusList)).thenReturn(
         courseDetailList);
     when(converter.convertStudentDetails(studentList, courseDetailList)).thenReturn(expected);
@@ -117,8 +116,8 @@ class StudentServiceTest {
             null, null, null, null, null, null, null, null));
 
     // 検証
-    verify(repository, times(1)).findStudent(any());
-    verify(repository, times(1)).findCourse(any());
+    verify(studentRepository, times(1)).findStudent(any());
+    verify(studentRepository, times(1)).findCourse(any());
     verify(converter, times(1)).convertCourseDetails(studentCourseList, courseStatusList);
     verify(converter, times(1)).convertStudentDetails(studentList, courseDetailList);
 
@@ -130,19 +129,19 @@ class StudentServiceTest {
   @Test
   void 受講生詳細情報の検索機能_リポジトリを適切に呼び出し結果が返ること() {
     // Mock設定
-    when(repository.searchStudent(studentId)).thenReturn(student);
-    when(repository.searchStudentsCourses(studentId)).thenReturn(courseList);
-    when(repository.searchCourseStatus(attendingId1)).thenReturn(status1);
-    when(repository.searchCourseStatus(attendingId2)).thenReturn(status2);
+    when(studentRepository.searchStudent(studentId)).thenReturn(student);
+    when(studentRepository.searchStudentsCourses(studentId)).thenReturn(courseList);
+    when(studentRepository.searchCourseStatus(attendingId1)).thenReturn(status1);
+    when(studentRepository.searchCourseStatus(attendingId2)).thenReturn(status2);
 
     // 実行
     var actual = sut.searchStudent(studentId);
 
     // 検証
-    verify(repository, times(1)).searchStudent(studentId);
-    verify(repository, times(1)).searchStudentsCourses(studentId);
-    verify(repository, times(1)).searchCourseStatus(attendingId1);
-    verify(repository, times(1)).searchCourseStatus(attendingId2);
+    verify(studentRepository, times(1)).searchStudent(studentId);
+    verify(studentRepository, times(1)).searchStudentsCourses(studentId);
+    verify(studentRepository, times(1)).searchCourseStatus(attendingId1);
+    verify(studentRepository, times(1)).searchCourseStatus(attendingId2);
 
     assertNotNull(actual);
     assertEquals(student, actual.getStudent());
@@ -155,7 +154,7 @@ class StudentServiceTest {
   @Test
   void 受講生詳細情報の検索機能_存在しない受講生を検索すると例外をスローすること() {
     // searchStudentメソッドにnullを返す
-    when(repository.searchStudent(studentId)).thenReturn(null);
+    when(studentRepository.searchStudent(studentId)).thenReturn(null);
 
     // 実行時に例外をthrowすることを検証
     assertThrows(NoDataException.class, () -> sut.searchStudent(studentId));
@@ -163,8 +162,8 @@ class StudentServiceTest {
 
   @Test
   void 受講生詳細情報の検索機能_受講生が存在するがコース情報がない場合_空リストを返すこと() {
-    when(repository.searchStudent(studentId)).thenReturn(student);
-    when(repository.searchStudentsCourses(studentId)).thenReturn(null);
+    when(studentRepository.searchStudent(studentId)).thenReturn(student);
+    when(studentRepository.searchStudentsCourses(studentId)).thenReturn(null);
 
     var actual = sut.searchStudent(studentId);
 
@@ -175,10 +174,10 @@ class StudentServiceTest {
 
   @Test
   void 受講生詳細情報の検索機能_受講コースが複数の場合_正しくリストされること() {
-    when(repository.searchStudent(studentId)).thenReturn(student);
-    when(repository.searchStudentsCourses(studentId)).thenReturn(courseList);
-    when(repository.searchCourseStatus(attendingId1)).thenReturn(status1);
-    when(repository.searchCourseStatus(attendingId2)).thenReturn(status2);
+    when(studentRepository.searchStudent(studentId)).thenReturn(student);
+    when(studentRepository.searchStudentsCourses(studentId)).thenReturn(courseList);
+    when(studentRepository.searchCourseStatus(attendingId1)).thenReturn(status1);
+    when(studentRepository.searchCourseStatus(attendingId2)).thenReturn(status2);
 
     var actual = sut.searchStudent(studentId);
 
@@ -192,18 +191,20 @@ class StudentServiceTest {
   @Test
   void 受講生情報の登録機能が動作し_受講生情報_コース情報_ステータス情報すべての登録に成功すること() {
     // Mock設定
-    when(repository.registerStudent(student)).thenReturn(1);
-    when(repository.registerStudentsCourses(any(StudentsCourse.class))).thenReturn(1);
-    when(repository.registerCourseStatus(any(CourseStatus.class))).thenReturn(1);
+    when(studentRepository.registerStudent(student)).thenReturn(1);
+    when(studentRepository.registerStudentsCourses(any(StudentsCourse.class))).thenReturn(1);
+    when(studentRepository.registerCourseStatus(any(CourseStatus.class))).thenReturn(1);
     // Mockito.any()：どんなStudentsCourseが引数でもthenReturn(1)が適用される
 
     // 実行
     StudentDetail actual = sut.registerStudent(studentDetail);
 
     // 検証
-    verify(repository, times(1)).registerStudent(student);
-    verify(repository, times(courseList.size())).registerStudentsCourses(any(StudentsCourse.class));
-    verify(repository, times(courseList.size())).registerCourseStatus(any(CourseStatus.class));
+    verify(studentRepository, times(1)).registerStudent(student);
+    verify(studentRepository, times(courseList.size())).registerStudentsCourses(
+        any(StudentsCourse.class));
+    verify(studentRepository, times(courseList.size())).registerCourseStatus(
+        any(CourseStatus.class));
 
     assertNotNull(actual);
     assertEquals(student, actual.getStudent());
@@ -213,35 +214,35 @@ class StudentServiceTest {
   @Test
   void 受講生情報の登録機能_受講生情報の登録に失敗すると例外をスローすること() {
     // registerStudentが失敗（0を返す）
-    when(repository.registerStudent(student)).thenReturn(0);
+    when(studentRepository.registerStudent(student)).thenReturn(0);
 
     // 例外がthrowされることを確認
     assertThrows(ProcessFailedException.class, () -> sut.registerStudent(studentDetail));
 
     // 以降の処理に進まないことを確認
-    verify(repository, never()).registerStudentsCourses(any());
-    verify(repository, never()).registerCourseStatus(any());
+    verify(studentRepository, never()).registerStudentsCourses(any());
+    verify(studentRepository, never()).registerCourseStatus(any());
   }
 
   @Test
   void 受講生情報の登録機能_コース情報の登録に失敗すると例外をスローすること() {
     // registerStudentは成功（1を返す）し、registerStudentsCourseが失敗（0を返す）
-    when(repository.registerStudent(student)).thenReturn(1);
-    when(repository.registerStudentsCourses(course1)).thenReturn(0);
+    when(studentRepository.registerStudent(student)).thenReturn(1);
+    when(studentRepository.registerStudentsCourses(course1)).thenReturn(0);
 
     // 例外がthrowされることを確認
     assertThrows(ProcessFailedException.class, () -> sut.registerStudent(studentDetail));
 
     // 以降の処理に進まないことを確認
-    verify(repository, never()).registerCourseStatus(any());
+    verify(studentRepository, never()).registerCourseStatus(any());
   }
 
   @Test
   void 受講生情報の登録機能_ステータス情報の登録に失敗すると例外をスローすること() {
     // registerStudent・registerStudentCourseは成功、registerCourseStatusが失敗
-    when(repository.registerStudent(student)).thenReturn(1);
-    when(repository.registerStudentsCourses(course1)).thenReturn(1);
-    when(repository.registerCourseStatus(status1)).thenReturn(0);
+    when(studentRepository.registerStudent(student)).thenReturn(1);
+    when(studentRepository.registerStudentsCourses(course1)).thenReturn(1);
+    when(studentRepository.registerCourseStatus(status1)).thenReturn(0);
 
     // 例外がthrowされることを確認
     assertThrows(ProcessFailedException.class, () -> sut.registerStudent(studentDetail));
@@ -274,18 +275,19 @@ class StudentServiceTest {
     var updateStudentDetail = new StudentDetail(updateStudent, updateCourseDetails);
 
     // Mock設定
-    when(repository.searchStudent(studentId)).thenReturn(
+    when(studentRepository.searchStudent(studentId)).thenReturn(
         updateStudent);  // studentId(1) -> updateStudent
-    when(repository.searchStudentsCourses(studentId)).thenReturn(
+    when(studentRepository.searchStudentsCourses(studentId)).thenReturn(
         updateCourses);  // studentId(1) -> updateCourses
-    when(repository.searchCourseStatus(attendingId1)).thenReturn(
+    when(studentRepository.searchCourseStatus(attendingId1)).thenReturn(
         updateStatus1);  // attendingId(1L) -> updateStatus1
-    when(repository.searchCourseStatus(attendingId2)).thenReturn(
+    when(studentRepository.searchCourseStatus(attendingId2)).thenReturn(
         updateStatus2);  // attendingId(2L) -> updateStatus2
-    when(repository.updateStudent(updateStudent)).thenReturn(1);  // updateStudent -> 更新が成功する
-    when(repository.updateStudentsCourses(any(StudentsCourse.class))).thenReturn(
+    when(studentRepository.updateStudent(updateStudent)).thenReturn(1);  // updateStudent -> 更新が成功する
+    when(studentRepository.updateStudentsCourses(any(StudentsCourse.class))).thenReturn(
         1);  // any() -> 更新が成功する
-    when(repository.updateCourseStatus(any(CourseStatus.class))).thenReturn(1);  // any() -> 更新が成功する
+    when(studentRepository.updateCourseStatus(any(CourseStatus.class))).thenReturn(
+        1);  // any() -> 更新が成功する
 
     // 実行
     sut.updateStudent(updateStudentDetail);
@@ -293,10 +295,10 @@ class StudentServiceTest {
 
     // 検証
     // メソッド呼び出し確認
-    verify(repository, times(1)).updateStudent(updateStudent);
-    verify(repository, times(updateCourses.size()))
+    verify(studentRepository, times(1)).updateStudent(updateStudent);
+    verify(studentRepository, times(updateCourses.size()))
         .updateStudentsCourses(any(StudentsCourse.class));
-    verify(repository, times(updateStatuses.size()))
+    verify(studentRepository, times(updateStatuses.size()))
         .updateCourseStatus(any(CourseStatus.class));
     // 更新前後の比較（結果が行進情報と一致/結果が更新対象と不一致）
     assertThat(actual)
@@ -305,57 +307,5 @@ class StudentServiceTest {
         .isEqualTo(updateStudentDetail)  // 期待値との比較
         .isNotEqualTo(studentDetail);
   }
-
-  @Test
-  void コースマスタの全件取得_リポジトリが適切に呼び出せていること() {
-    List<Course> expected = new ArrayList<>();
-    when(repository.displayCourseMaster()).thenReturn(expected);
-    List<Course> actual = sut.getCourseList();
-    assertNotNull(actual);
-    assertEquals(expected, actual);
-  }
-
-  @Test
-  void コースマスタの新規作成_リポジトリを適切に呼び出し引数を渡せていること() {
-    var master = new Course(CourseName.Javaコース, CourseCategory.開発系コース, 999);
-    sut.registerCourseMaster(master);
-    verify(repository, times(1)).registerCourseMaster(master);
-  }
-
-  @Test
-  void コースマスタのID検索_リポジトリを適切に呼び出し引数を渡せていること() {
-    sut.getCourseMaster(2);
-    verify(repository, times(1)).searchCourseMaster(2);
-  }
-
-  @Test
-  void コースマスタの削除_リポジトリを適切に呼び出し引数を渡せていること() {
-    var courseId = 1;
-    var master = new Course(courseId, CourseName.Javaコース, CourseCategory.開発系コース, 999,
-        false, Timestamp.valueOf(LocalDateTime.now()),
-        Timestamp.valueOf(LocalDateTime.now().plusMonths(6)));
-    when(repository.searchCourseMaster(courseId)).thenReturn(master);
-
-    sut.deleteCourseMaster(courseId);
-
-    verify(repository, times(1)).searchCourseMaster(courseId);
-    verify(repository, times(1)).deleteCourseMaster(courseId);
-  }
-
-  @Test
-  void コースマスタの削除_存在しないIDの場合_例外が発生すること() {
-
-    // 存在しないIDを検索するとnullを返す
-    Integer courseId = 999;
-    when(repository.searchCourseMaster(courseId)).thenReturn(null);
-
-    // 実行によりNoDataExceptionが発生することを確認
-    NoDataException exception = assertThrows(
-        NoDataException.class, () -> sut.deleteCourseMaster(courseId)
-    );
-    assertThat(exception.getMessage()).isEqualTo("削除対象が見つかりません。[ID: 999 ]");
-
-    // deleteCourseMasterメソッドが一度も呼ばれていないことを確認
-    verify(repository, never()).deleteCourseMaster(any());
-  }
+  
 }
