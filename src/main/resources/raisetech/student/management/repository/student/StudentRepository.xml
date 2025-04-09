@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
   "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
-<mapper namespace="raisetech.student.management.repository.StudentRepository">
+<mapper namespace="raisetech.student.management.repository.student.StudentRepository">
 
   <!-- 受講生の一覧表示 -->
   <select id="displayStudent" resultType="raisetech.student.management.data.Student">

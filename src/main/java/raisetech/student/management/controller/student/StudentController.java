@@ -1,4 +1,4 @@
-package raisetech.student.management.controller;
+package raisetech.student.management.controller.student;
 
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
@@ -21,6 +21,7 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RestController;
+import raisetech.student.management.controller.StudentSearchForm;
 import raisetech.student.management.data.Course;
 import raisetech.student.management.domain.StudentDetail;
 import raisetech.student.management.service.StudentService;

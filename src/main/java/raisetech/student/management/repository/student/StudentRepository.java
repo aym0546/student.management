@@ -1,4 +1,4 @@
-package raisetech.student.management.repository;
+package raisetech.student.management.repository.student;
 
 import jakarta.validation.Valid;
 import java.util.List;
@@ -13,7 +13,7 @@ import raisetech.student.management.dto.StudentSearchDTO;
  * 受講生情報を扱うRepository（インターフェース） 受講生テーブルと受講生コース情報テーブルと紐づいています。 全件検索や単一条件での検索、コース情報の検索が行えるクラスです。
  */
 @Mapper
-public interface StudentRepository {
+public interface CourseRepository {
 
   /**
    * 【受講生の一覧表示】

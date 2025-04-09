@@ -1,4 +1,4 @@
-package raisetech.student.management.service;
+package raisetech.student.management.service.student;
 
 import java.sql.Timestamp;
 import java.time.LocalDate;
@@ -20,7 +20,7 @@ import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 import org.mockito.junit.jupiter.MockitoExtension;
-import raisetech.student.management.controller.converter.StudentConverter;
+import raisetech.student.management.converter.student.StudentConverter;
 import raisetech.student.management.data.Course;
 import raisetech.student.management.data.Course.CourseCategory;
 import raisetech.student.management.data.Course.CourseName;
@@ -33,7 +33,8 @@ import raisetech.student.management.domain.StudentDetail;
 import raisetech.student.management.dto.StudentSearchDTO;
 import raisetech.student.management.exception.NoDataException;
 import raisetech.student.management.exception.ProcessFailedException;
-import raisetech.student.management.repository.StudentRepository;
+import raisetech.student.management.repository.student.StudentRepository;
+import raisetech.student.management.service.course.StudentService;
 
 @ExtendWith(MockitoExtension.class)
 class StudentServiceTest {

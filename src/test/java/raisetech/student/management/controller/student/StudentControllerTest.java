@@ -1,4 +1,4 @@
-package raisetech.student.management.controller;
+package raisetech.student.management.controller.student;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.SerializationFeature;
@@ -37,7 +37,7 @@ import raisetech.student.management.data.StudentsCourse;
 import raisetech.student.management.domain.CourseDetail;
 import raisetech.student.management.domain.StudentDetail;
 import raisetech.student.management.exception.NoDataException;
-import raisetech.student.management.service.StudentService;
+import raisetech.student.management.service.course.StudentService;
 
 @WebMvcTest(StudentController.class)
 @Import(StudentControllerTest.MockConfig.class) // モックBeanを定義したクラスをインポート

@@ -1,4 +1,4 @@
-package raisetech.student.management.repository;
+package raisetech.student.management.repository.student;
 
 import java.sql.Timestamp;
 import java.time.LocalDate;

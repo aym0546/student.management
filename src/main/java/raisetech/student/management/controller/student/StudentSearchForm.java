@@ -1,4 +1,4 @@
-package raisetech.student.management.controller;
+package raisetech.student.management.controller.student;
 
 import io.swagger.v3.oas.annotations.media.Schema;
 import java.time.LocalDate;
