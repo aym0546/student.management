@@ -1,4 +1,4 @@
-package raisetech.student.management.controller;
+package raisetech.student.management.controller.student;
 
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
@@ -19,16 +19,18 @@ import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 import raisetech.student.management.domain.StudentDetail;
-import raisetech.student.management.service.StudentService;
+import raisetech.student.management.service.student.StudentService;
 
 /**
  * 受講生の検索や登録、更新などを行うREST APIとして受け付けるControllerです。
  */
 @Validated
 @RestController
-@Tag(name = "受講生管理", description = "受講生の登録・検索・更新を行うAPI")
+@RequestMapping("/students")
+@Tag(name = "受講生管理", description = "受講生情報の登録・検索・更新を行うAPI")
 public class StudentController {
 
   private final StudentService service;
@@ -55,7 +57,7 @@ public class StudentController {
       @ApiResponse(responseCode = "404", description = "該当する受講生が見つかりません"),
       @ApiResponse(responseCode = "500", description = "サーバーエラー")
   })
-  @GetMapping("/students")  // GET /students?__=__
+  @GetMapping  // GET /students?__=__
   public ResponseEntity<List<StudentDetail>> searchStudents(StudentSearchForm searchForm) {
 
     List<StudentDetail> studentDetails = service.getStudentList(searchForm.toDTO());
@@ -78,7 +80,7 @@ public class StudentController {
       @ApiResponse(responseCode = "400", description = "更新処理に失敗しました"),
       @ApiResponse(responseCode = "500", description = "サーバーエラー")
   })
-  @PostMapping("/students")
+  @PostMapping
   public ResponseEntity<StudentDetail> registerStudent(
       @RequestBody @Valid StudentDetail studentDetail) {
 
@@ -100,7 +102,7 @@ public class StudentController {
       @ApiResponse(responseCode = "404", description = "該当する受講生が見つかりません"),
       @ApiResponse(responseCode = "500", description = "サーバーエラー")
   })
-  @GetMapping("/students/{studentId}")
+  @GetMapping("/{studentId}")
   public StudentDetail getStudent(
       @Parameter(description = "検索する受講生のID", example = "12")
       @PathVariable @Valid Integer studentId) {
@@ -119,25 +121,14 @@ public class StudentController {
       @ApiResponse(responseCode = "400", description = "更新処理に失敗しました"),
       @ApiResponse(responseCode = "500", description = "サーバーエラー")
   })
-  @PutMapping("/students")
+  @PutMapping
   public ResponseEntity<String> updateStudent(
       @RequestBody @Validated({Default.class, Update.class}) StudentDetail studentDetail) {
     service.updateStudent(studentDetail);
     return ResponseEntity.ok(
-        studentDetail.getStudent().getFullName() + "さんの更新処理が成功しました。");
+        studentDetail.getStudent().getFullName() + " さんの更新処理が成功しました。");
     // 更新が完了したらレスポンスとしてOK(200)とメッセージを返す。
   }
-
-  /**
-   * 【リダイレクト】 旧URIが指定された場合に、正しいURI"/students"にリダイレクトする。
-   *
-   * @return /students リダイレクト
-   */
-  @Operation(summary = "/students リダイレクト", description = "旧URIのハンドリングメソッドです。")
-  @GetMapping("/studentList")
-  public ResponseEntity<Void> redirectStudents() {
-    return ResponseEntity.status(HttpStatus.SEE_OTHER)
-        .location(URI.create("/students")).build();
-  }
-
+  
 }
+

@@ -1,4 +1,4 @@
-package raisetech.student.management.controller;
+package raisetech.student.management.controller.student;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.SerializationFeature;
@@ -31,7 +31,7 @@ import raisetech.student.management.data.StudentsCourse;
 import raisetech.student.management.domain.CourseDetail;
 import raisetech.student.management.domain.StudentDetail;
 import raisetech.student.management.exception.NoDataException;
-import raisetech.student.management.service.StudentService;
+import raisetech.student.management.service.student.StudentService;
 
 @WebMvcTest(StudentController.class)
 @Import(StudentControllerTest.MockConfig.class) // モックBeanを定義したクラスをインポート
@@ -63,6 +63,7 @@ class StudentControllerTest {
 
   @BeforeEach
   void before() {
+
     // テストデータ作成
     student = new Student(
         999, "テスト花子", "てすとはなこ", "てすこ", "test@email", "テスト区",
@@ -79,12 +80,16 @@ class StudentControllerTest {
 
     studentDetail = new StudentDetail(student, List.of(courseDetail1, courseDetail2));
 
+//    course = new Course(
+//        1, CourseName.Javaコース, CourseCategory.開発系コース, 6, false,
+//        Timestamp.valueOf("2021-05-07 16:00:00"), Timestamp.valueOf("2021-05-07 16:00:00"));
+
     Mockito.reset(service); // モックをリセット
 
   }
 
   @Test
-  void 詳細検索が実行でき_該当する受講生情報が返ってくること() throws Exception {
+  void 詳細検索_正常完了_200OKと該当する受講生情報が返ってくること() throws Exception {
     // 検索条件設定
     var searchForm = new StudentSearchForm(
         "テスト", 0, 100, null, null, null, null, null, null, null, null, null);
@@ -106,7 +111,8 @@ class StudentControllerTest {
   }
 
   @Test
-  void 詳細検索が実行でき_該当する受講生がいない場合() throws Exception {
+  void 詳細検索_該当する受講生がいない場合_404NotFoundが返ってくること()
+      throws Exception {
     // 検索条件設定
     var searchForm = new StudentSearchForm(
         "存在しない名前", 0, 100, null, null, null, null, null, null, null, null, null);
@@ -123,7 +129,7 @@ class StudentControllerTest {
   }
 
   @Test
-  void 受講生登録が実行でき_登録された受講生情報が返ってくること() throws Exception {
+  void 受講生登録_正常完了_201Createdと登録された受講生情報が返ってくること() throws Exception {
 
     var objectMapper = new ObjectMapper()
         .registerModule(new JavaTimeModule())
@@ -166,7 +172,7 @@ class StudentControllerTest {
   }
 
   @Test
-  void 受講生検索が実行でき_受講生情報が返ってくること() throws Exception {
+  void 受講生検索_正常完了_200OKと受講生情報が返ってくること() throws Exception {
     int studentId = 999;
 
     var objectMapper = new ObjectMapper()
@@ -209,7 +215,7 @@ class StudentControllerTest {
   }
 
   @Test
-  void 受講生更新が実行でき_実行結果が返ってくること() throws Exception {
+  void 受講生更新_正常完了_200OK実行結果が返ってくること() throws Exception {
 
     // studentDetailをJSONに変換（日時加工）
     var objectMapper = new ObjectMapper()
@@ -223,13 +229,14 @@ class StudentControllerTest {
             .content(request))
         // レスポンスの検証
         .andExpect(status().isOk())
-        .andExpect(content().string("テスト花子さんの更新処理が成功しました。"));
+        .andExpect(content().string("テスト花子 さんの更新処理が成功しました。"));
 
     verify(service, times(1)).updateStudent(any());
   }
 
   @Test
-  void 受講生検索で存在しないstudentIdを指定した時にエラーメッセージが返ること() throws Exception {
+  void 受講生検索_存在しないstudentIdを指定した時_404NotFoundとエラーメッセージが返ること()
+      throws Exception {
     int testStudentId = 1234567890;
 
     // Service 例外スロー

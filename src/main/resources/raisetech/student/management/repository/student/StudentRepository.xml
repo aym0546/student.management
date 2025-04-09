@@ -1,11 +1,11 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
   "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
-<mapper namespace="raisetech.student.management.repository.StudentRepository">
+<mapper namespace="raisetech.student.management.repository.student.StudentRepository">
 
   <!-- 受講生の一覧表示 -->
   <select id="displayStudent" resultType="raisetech.student.management.data.Student">
-    SELECT * FROM students
+    SELECT * FROM students WHERE is_deleted = 0
   </select>
 
   <!-- コース情報の一覧表示 -->
@@ -20,7 +20,7 @@
 
   <!-- 受講生検索 -->
   <select id="searchStudent" resultType="raisetech.student.management.data.Student">
-    SELECT * FROM students WHERE student_id = #{studentId}
+    SELECT * FROM students WHERE student_id = #{studentId} AND is_deleted = 0
   </select>
 
   <!-- コース情報検索 -->
@@ -36,9 +36,9 @@
   <!-- 受講生情報の登録 -->
   <insert id="registerStudent" useGeneratedKeys="true" keyProperty="studentId">
     INSERT INTO students(full_name, name_pronunciation, nickname, email, area, birth_date, gender,
-    remark, is_deleted)
+    remark)
     VALUES (#{fullName}, #{namePronunciation}, #{nickname}, #{email}, #{area}, #{birthDate},
-    #{gender}, #{remark}, false)
+    #{gender}, #{remark})
   </insert>
 
   <!-- コース情報の登録 -->
@@ -74,8 +74,11 @@
   <select id="findStudent" resultType="raisetech.student.management.data.Student">
     SELECT DISTINCT * FROM students
     <where>
+      <if test="true">
+        is_deleted = 0
+      </if>
       <if test='name != null and !name.isBlank()'>
-        (
+        AND (
         full_name LIKE CONCAT('%', #{name}, '%')
         OR name_pronunciation LIKE CONCAT('%', #{name}, '%')
         OR nickname LIKE CONCAT('%', #{name}, '%')
@@ -129,4 +132,33 @@
       </if>
     </where>
   </select>
+
+  <!--  &lt;!&ndash; コースマスタの全件取得 &ndash;&gt;-->
+  <!--  <select id="displayCourseMaster" resultType="raisetech.student.management.data.Course">-->
+  <!--    SELECT * FROM courses-->
+  <!--  </select>-->
+
+  <!--  &lt;!&ndash; コースマスタの新規作成 &ndash;&gt;-->
+  <!--  <insert id="registerCourseMaster" useGeneratedKeys="true" keyProperty="courseId">-->
+  <!--    INSERT INTO courses(course_name, category, duration)-->
+  <!--    VALUES (#{courseName}, #{category}, #{duration})-->
+  <!--  </insert>-->
+
+  <!--  &lt;!&ndash; コースマスタのID検索 &ndash;&gt;-->
+  <!--  <select id="searchCourseMaster" resultType="raisetech.student.management.data.Course">-->
+  <!--    SELECT * FROM courses WHERE course_id = #{courseId}-->
+  <!--  </select>-->
+
+  <!--  &lt;!&ndash; コースマスタの更新 &ndash;&gt;-->
+  <!--  <update id="updateCourseMaster">-->
+  <!--    UPDATE courses-->
+  <!--    SET course_name = #{courseName}, category = #{category}, duration = #{duration}, is_closed =-->
+  <!--    #{isClosed} WHERE course_id = #{courseId}-->
+  <!--  </update>-->
+
+  <!--  &lt;!&ndash; コースマスタの削除 &ndash;&gt;-->
+  <!--  <delete id="deleteCourseMaster">-->
+  <!--    DELETE FROM courses WHERE course_id = #{courseId}-->
+  <!--  </delete>-->
+
 </mapper>

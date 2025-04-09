@@ -1,14 +1,16 @@
-package raisetech.student.management.service;
+package raisetech.student.management.service.student;
 
 import java.time.LocalDateTime;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-import raisetech.student.management.controller.converter.StudentConverter;
+import raisetech.student.management.converter.student.StudentConverter;
+import raisetech.student.management.data.Course;
 import raisetech.student.management.data.CourseStatus;
 import raisetech.student.management.data.Student;
 import raisetech.student.management.data.StudentsCourse;
@@ -17,7 +19,8 @@ import raisetech.student.management.domain.StudentDetail;
 import raisetech.student.management.dto.StudentSearchDTO;
 import raisetech.student.management.exception.NoDataException;
 import raisetech.student.management.exception.ProcessFailedException;
-import raisetech.student.management.repository.StudentRepository;
+import raisetech.student.management.repository.course.CourseRepository;
+import raisetech.student.management.repository.student.StudentRepository;
 
 /**
  * 受講生情報を取り扱うServiceです。 受講生の検索や登録、更新処理を行います。
@@ -25,20 +28,24 @@ import raisetech.student.management.repository.StudentRepository;
 @Service
 public class StudentService {
 
-  //	インターフェースStudentRepository、StudentConverterを呼び出し
-  private final StudentRepository repository;
+  //	インターフェースStudentRepository、StudentConverter、CourseRepositoryを呼び出し
+  private final StudentRepository studentRepository;
   private final StudentConverter converter;
+  private final CourseRepository courseRepository;
 
   /**
    * コンストラクタ
    *
-   * @param repository 受講生を扱うリポジトリ
-   * @param converter  受講生詳細と受講生情報・コース情報のコンバーター
+   * @param studentRepository 受講生を扱うリポジトリ
+   * @param converter         受講生詳細と受講生情報・コース情報のコンバーター
+   * @param courseRepository  コースマスタを扱うリポジトリ
    */
   @Autowired
-  public StudentService(StudentRepository repository, StudentConverter converter) {
-    this.repository = repository;
+  public StudentService(StudentRepository studentRepository, StudentConverter converter,
+      CourseRepository courseRepository) {
+    this.studentRepository = studentRepository;
     this.converter = converter;
+    this.courseRepository = courseRepository;
   }
 
   /**
@@ -49,9 +56,9 @@ public class StudentService {
    */
   public List<StudentDetail> getStudentList(StudentSearchDTO searchDTO) {
 
-    List<Student> studentList = repository.findStudent(searchDTO);
-    List<StudentsCourse> studentsCourses = repository.findCourse(searchDTO);
-    List<CourseStatus> courseStatuses = repository.findStatus(searchDTO);
+    List<Student> studentList = studentRepository.findStudent(searchDTO);
+    List<StudentsCourse> studentsCourses = studentRepository.findCourse(searchDTO);
+    List<CourseStatus> courseStatuses = studentRepository.findStatus(searchDTO);
 
     return converter.convertStudentDetails(studentList,
         converter.convertCourseDetails(studentsCourses, courseStatuses));
@@ -65,18 +72,20 @@ public class StudentService {
    */
   public StudentDetail searchStudent(Integer studentId) {
     // 受け取ったstudentIDを元に受講生情報を検索
-    Student student = repository.searchStudent(studentId);
+    Student student = studentRepository.searchStudent(studentId);
     // nullチェック
     if (Objects.isNull(student)) {
       throw new NoDataException("該当する受講生が見つかりません。ID：" + studentId);
     }
-    // 受講生情報のstudentIDに基づいてコース情報を検索
-    List<StudentsCourse> studentsCourses = repository.searchStudentsCourses(student.getStudentId());
+    // 受講生情報のstudentIDに基づいてコース情報を検索（nullの場合は空リスト）
+    List<StudentsCourse> studentsCourses = Optional.ofNullable(
+            studentRepository.searchStudentsCourses(student.getStudentId()))
+        .orElse(Collections.emptyList());
     // コース情報のattendingIDに基づいて受講状況を検索、受講状況と紐付け
     List<CourseDetail> courseDetails = new ArrayList<>();  // 空の受講コース状況リストを作成
     for (StudentsCourse course : studentsCourses) {
       courseDetails.add(
-          new CourseDetail(course, repository.searchCourseStatus(course.getAttendingId())));
+          new CourseDetail(course, studentRepository.searchCourseStatus(course.getAttendingId())));
     }
 
     // ↑の受講生情報・コース情報を持つnew StudentDetailを生成してreturn
@@ -93,7 +102,7 @@ public class StudentService {
   @Transactional
   public StudentDetail registerStudent(StudentDetail studentDetail) {
     // 受講生情報の登録
-    int registeredStudent = repository.registerStudent(studentDetail.getStudent());
+    int registeredStudent = studentRepository.registerStudent(studentDetail.getStudent());
     // 受講生登録が行われなかった場合にexをthrow -> 処理中断
     if (registeredStudent == 0) {
       throw new ProcessFailedException("受講生の登録に失敗しました。");
@@ -103,6 +112,9 @@ public class StudentService {
     int registeredCourse = 0;
     int registeredStatus = 0;
 
+    // 現在日時を取得
+    LocalDateTime now = LocalDateTime.now();
+
     // studentDetailのcourseDetailの数だけコース情報・ステータス情報を登録する
     for (CourseDetail courseDetail : studentDetail.getCourseDetailList()) {
       // コース情報の登録
@@ -110,25 +122,35 @@ public class StudentService {
           course -> {
             // courseのstudent_idは↑で自動生成・登録されたものを使用
             course.setStudentId(studentDetail.getStudent().getStudentId());
-            // start_dateとend_dateは現在日時とその1年後を取得
-            course.setStartDate(LocalDateTime.now());
-            course.setEndDate(LocalDateTime.now().plusYears(1));
+            // start_dateは現在日時に設定
+            course.setStartDate(now);
+            // courseIdに対応するdurationを取得し、end_dateを計算
+            int duration = courseRepository.displayCourseMaster()
+                .stream()
+                .filter(c -> c.getCourseId() == course.getCourseId())
+                .map(Course::getDuration)
+                .findFirst()
+                .orElse(0);
+            course.setEndDate(now.plusMonths(duration));
           }
       );
-      registeredCourse += repository.registerStudentsCourses(courseDetail.getCourse());
+      registeredCourse += studentRepository.registerStudentsCourses(courseDetail.getCourse());
+
+      // コース情報の登録が行われなかった場合に例外をthrow -> 処理中断
+      if (registeredCourse == 0) {
+        throw new ProcessFailedException("受講コース情報の登録に失敗しました。");
+      }
 
       // ステータス情報の登録
       Optional.ofNullable(courseDetail.getStatus()).ifPresent(
           status ->
               status.setAttendingId(courseDetail.getCourse().getAttendingId())
       );
-      registeredStatus += repository.registerCourseStatus(courseDetail.getStatus());
+      registeredStatus += studentRepository.registerCourseStatus(courseDetail.getStatus());
     }
 
-    // コース情報・ステータス情報の登録が行われなかった場合にexをthrow -> 処理中断
-    if (registeredCourse == 0) {
-      throw new ProcessFailedException("受講コース情報の登録に失敗しました。");
-    } else if (registeredStatus == 0) {
+    // ステータス情報の登録が行われなかった場合に例外をthrow -> 処理中断
+    if (registeredStatus == 0) {
       throw new ProcessFailedException("受講ステータス情報の登録に失敗しました。");
     }
 
@@ -146,14 +168,14 @@ public class StudentService {
 
     // 事前に対象の受講生情報を検索（なければ例外throw）
     Integer targetStudentId = studentDetail.getStudent().getStudentId();
-    Student studentExist = repository.searchStudent(targetStudentId);
+    Student studentExist = studentRepository.searchStudent(targetStudentId);
     if (studentExist == null) {
       throw new NoDataException(
           "更新対象の受講生情報が見つかりません。[ID: " + targetStudentId + " ]");
     }
 
     // 事前に対象の受講生のコース情報リストを取得
-    List<StudentsCourse> courseExist = repository.searchStudentsCourses(targetStudentId);
+    List<StudentsCourse> courseExist = studentRepository.searchStudentsCourses(targetStudentId);
     if (courseExist.isEmpty()) {
       throw new NoDataException(
           "更新対象のコース受講情報が見つかりません。[ID: " + targetStudentId + " ]");
@@ -161,7 +183,7 @@ public class StudentService {
 
     // 事前に対象のコースのステータス情報リストを取得
     List<CourseStatus> statusExist = courseExist.stream()
-        .map(course -> repository.searchCourseStatus(course.getAttendingId()))
+        .map(course -> studentRepository.searchCourseStatus(course.getAttendingId()))
         .toList();
     if (statusExist.isEmpty()) {
       throw new NoDataException(
@@ -169,18 +191,18 @@ public class StudentService {
     }
 
     // 受講生情報の更新
-    int updatedStudentData = repository.updateStudent(studentDetail.getStudent());
+    int updatedStudentData = studentRepository.updateStudent(studentDetail.getStudent());
     // コース情報・ステータス情報の更新
     int updatedStudentsCourseData = 0;
     int updatedCourseStatusData = 0;
     // studentDetailに含まれるCourseDetailを一つづつ取り出して処理
     for (CourseDetail courseDetail : studentDetail.getCourseDetailList()) {
       // ↓ studentsCourseにはデータベースから取得した時点でattending_idが設定済みであるため、自動的にattending_idは@Updateに渡される
-      int updateCourseData = repository.updateStudentsCourses(courseDetail.getCourse());
+      int updateCourseData = studentRepository.updateStudentsCourses(courseDetail.getCourse());
       if (updateCourseData > 0) {
         updatedStudentsCourseData += updateCourseData;
       }
-      int updateStatusData = repository.updateCourseStatus(courseDetail.getStatus());
+      int updateStatusData = studentRepository.updateCourseStatus(courseDetail.getStatus());
       if (updateStatusData > 0) {
         updatedCourseStatusData += updateStatusData;
       }
@@ -193,5 +215,5 @@ public class StudentService {
     }
 
   }
-
+  
 }
