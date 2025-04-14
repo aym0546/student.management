@@ -9,6 +9,7 @@ import java.util.List;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.eq;
 import org.mockito.Mockito;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
@@ -79,10 +80,6 @@ class StudentControllerTest {
     );
 
     studentDetail = new StudentDetail(student, List.of(courseDetail1, courseDetail2));
-
-//    course = new Course(
-//        1, CourseName.Javaコース, CourseCategory.開発系コース, 6, false,
-//        Timestamp.valueOf("2021-05-07 16:00:00"), Timestamp.valueOf("2021-05-07 16:00:00"));
 
     Mockito.reset(service); // モックをリセット
 
@@ -224,14 +221,14 @@ class StudentControllerTest {
     String request = objectMapper.writeValueAsString(studentDetail);
 
     // PUT /updateStudent にJSONを送信
-    mockMvc.perform(MockMvcRequestBuilders.put("/students")
+    mockMvc.perform(MockMvcRequestBuilders.put("/students/{studentId}", 999)
             .contentType(MediaType.APPLICATION_JSON)
             .content(request))
         // レスポンスの検証
         .andExpect(status().isOk())
         .andExpect(content().string("テスト花子 さんの更新処理が成功しました。"));
 
-    verify(service, times(1)).updateStudent(any());
+    verify(service, times(1)).updateStudent(eq(999), any(StudentDetail.class));
   }
 
   @Test

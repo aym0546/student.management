@@ -160,34 +160,37 @@ public class StudentService {
   /**
    * 【受講生更新】 指定されたIDの受講生情報を更新。
    *
+   * @param studentId     更新対象の受講生ID
    * @param studentDetail 入力された更新情報（受講生詳細）
    */
   @Transactional
-  public void updateStudent(StudentDetail studentDetail) {
+  public void updateStudent(Integer studentId, StudentDetail studentDetail) {
     // ここに遷移した時点で既に特定のstudentIdのstudentDetailが呼び出されている
+    // パスパラメータとリクエストボディのstudentIdをパスパラメータのものに統一
+    studentDetail.getStudent().setStudentId(studentId);
 
     // 事前に対象の受講生情報を検索（なければ例外throw）
-    Integer targetStudentId = studentDetail.getStudent().getStudentId();
-    Student studentExist = studentRepository.searchStudent(targetStudentId);
+    Student studentExist = studentRepository.searchStudent(studentId);
     if (studentExist == null) {
       throw new NoDataException(
-          "更新対象の受講生情報が見つかりません。[ID: " + targetStudentId + " ]");
+          "更新対象の受講生情報が見つかりません。[ID: " + studentId + " ]");
     }
 
     // 事前に対象の受講生のコース情報リストを取得
-    List<StudentsCourse> courseExist = studentRepository.searchStudentsCourses(targetStudentId);
+    List<StudentsCourse> courseExist = studentRepository.searchStudentsCourses(studentId);
     if (courseExist.isEmpty()) {
       throw new NoDataException(
-          "更新対象のコース受講情報が見つかりません。[ID: " + targetStudentId + " ]");
+          "更新対象のコース受講情報が見つかりません。[ID: " + studentId + " ]");
     }
 
     // 事前に対象のコースのステータス情報リストを取得
     List<CourseStatus> statusExist = courseExist.stream()
         .map(course -> studentRepository.searchCourseStatus(course.getAttendingId()))
+        .filter(Objects::nonNull)
         .toList();
     if (statusExist.isEmpty()) {
       throw new NoDataException(
-          "更新対象のステータス情報が見つかりません。[ID: " + targetStudentId + " ]");
+          "更新対象のステータス情報が見つかりません。[ID: " + studentId + " ]");
     }
 
     // 受講生情報の更新
@@ -215,5 +218,5 @@ public class StudentService {
     }
 
   }
-  
+
 }

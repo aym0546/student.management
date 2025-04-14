@@ -55,7 +55,6 @@ class StudentServiceTest {
   private List<StudentsCourse> courseList;
   private CourseStatus status1;
   private CourseStatus status2;
-  private List<CourseStatus> statusList;
   private CourseDetail courseDetail1;
   private CourseDetail courseDetail2;
   private List<CourseDetail> courseDetailList;
@@ -82,7 +81,6 @@ class StudentServiceTest {
 
     status1 = new CourseStatus(1, attendingId1, Status.受講終了);
     status2 = new CourseStatus(1, attendingId2, Status.受講中);
-    statusList = List.of(status1, status2);
 
     courseDetail1 = new CourseDetail(course1, status1);
     courseDetail2 = new CourseDetail(course2, status2);
@@ -212,7 +210,7 @@ class StudentServiceTest {
   }
 
   @Test
-  void 受講生情報の登録機能_受講生情報の登録に失敗すると例外をスローすること() {
+  void 受講生情報の登録機能_受講生情報の登録に失敗するとProcessFailedExceptionをスローすること() {
     // registerStudentが失敗（0を返す）
     when(studentRepository.registerStudent(student)).thenReturn(0);
 
@@ -225,7 +223,7 @@ class StudentServiceTest {
   }
 
   @Test
-  void 受講生情報の登録機能_コース情報の登録に失敗すると例外をスローすること() {
+  void 受講生情報の登録機能_コース情報の登録に失敗するとProcessFailedExceptionをスローすること() {
     // registerStudentは成功（1を返す）し、registerStudentsCourseが失敗（0を返す）
     when(studentRepository.registerStudent(student)).thenReturn(1);
     when(studentRepository.registerStudentsCourses(course1)).thenReturn(0);
@@ -238,7 +236,7 @@ class StudentServiceTest {
   }
 
   @Test
-  void 受講生情報の登録機能_ステータス情報の登録に失敗すると例外をスローすること() {
+  void 受講生情報の登録機能_ステータス情報の登録に失敗するとProcessFailedExceptionをスローすること() {
     // registerStudent・registerStudentCourseは成功、registerCourseStatusが失敗
     when(studentRepository.registerStudent(student)).thenReturn(1);
     when(studentRepository.registerStudentsCourses(course1)).thenReturn(1);
@@ -249,7 +247,7 @@ class StudentServiceTest {
   }
 
   @Test
-  void 受講生情報の更新機能が動作し_受講生情報_コース情報_ステータス情報すべての更新に成功すること() {
+  void 受講生情報の更新機能_受講生情報_コース情報_ステータス情報すべての更新に成功すること() {
     // 事前準備
     // 更新情報 updateStudentDetail
     var updateStudent = new Student(
@@ -290,7 +288,7 @@ class StudentServiceTest {
         1);  // any() -> 更新が成功する
 
     // 実行
-    sut.updateStudent(updateStudentDetail);
+    sut.updateStudent(studentId, updateStudentDetail);
     StudentDetail actual = sut.searchStudent(studentId);  // 実測値
 
     // 検証
@@ -307,5 +305,44 @@ class StudentServiceTest {
         .isEqualTo(updateStudentDetail)  // 期待値との比較
         .isNotEqualTo(studentDetail);
   }
-  
+
+  @Test
+  void 受講生情報の更新機能_該当する受講生がいない場合にNoDataExceptionをスローすること() {
+    when(studentRepository.searchStudent(studentId)).thenReturn(null);
+
+    assertThrows(NoDataException.class, () -> sut.updateStudent(studentId, studentDetail));
+  }
+
+  @Test
+  void 受講生情報の更新機能_該当するコースがない場合にNoDataExceptionをスローすること() {
+    when(studentRepository.searchStudent(studentId)).thenReturn(student);
+    when(studentRepository.searchStudentsCourses(studentId)).thenReturn(List.of());  // 空リストが返ってくる
+
+    assertThrows(NoDataException.class, () -> sut.updateStudent(studentId, studentDetail));
+  }
+
+  @Test
+  void 受講生情報の更新機能_該当するステータスがない場合にNoDataExceptionをスローすること() {
+    when(studentRepository.searchStudent(studentId)).thenReturn(student);
+    when(studentRepository.searchStudentsCourses(studentId)).thenReturn(courseList);
+    when(studentRepository.searchCourseStatus(attendingId1)).thenReturn(null);
+    when(studentRepository.searchCourseStatus(attendingId2)).thenReturn(null);
+
+    assertThrows(NoDataException.class, () -> sut.updateStudent(studentId, studentDetail));
+  }
+
+  @Test
+  void 受講生情報の更新機能_すべての更新結果が0件の場合にProcessFailedExceptionをスローすること() {
+    when(studentRepository.searchStudent(studentId)).thenReturn(student);
+    when(studentRepository.searchStudentsCourses(studentId)).thenReturn(courseList);
+    when(studentRepository.searchCourseStatus(attendingId1)).thenReturn(status1);
+    when(studentRepository.searchCourseStatus(attendingId2)).thenReturn(status2);
+
+    when(studentRepository.updateStudent(any(Student.class))).thenReturn(0);
+    when(studentRepository.updateStudentsCourses(any(StudentsCourse.class))).thenReturn(0);
+    when(studentRepository.updateCourseStatus(any(CourseStatus.class))).thenReturn(0);
+
+    assertThrows(ProcessFailedException.class, () -> sut.updateStudent(studentId, studentDetail));
+  }
+
 }

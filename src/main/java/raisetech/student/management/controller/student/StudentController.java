@@ -112,6 +112,7 @@ public class StudentController {
   /**
    * 【受講生更新】 指定されたIDの受講生詳細情報を更新する。 キャンセルフラグの更新も行う（論理削除）
    *
+   * @param studentId     更新対象の受講生ID
    * @param studentDetail 更新される入力情報（受講生詳細情報）
    * @return 実行結果
    */
@@ -121,14 +122,15 @@ public class StudentController {
       @ApiResponse(responseCode = "400", description = "更新処理に失敗しました"),
       @ApiResponse(responseCode = "500", description = "サーバーエラー")
   })
-  @PutMapping
+  @PutMapping("/{studentId}")
   public ResponseEntity<String> updateStudent(
+      @PathVariable Integer studentId,
       @RequestBody @Validated({Default.class, Update.class}) StudentDetail studentDetail) {
-    service.updateStudent(studentDetail);
+    service.updateStudent(studentId, studentDetail);
     return ResponseEntity.ok(
         studentDetail.getStudent().getFullName() + " さんの更新処理が成功しました。");
     // 更新が完了したらレスポンスとしてOK(200)とメッセージを返す。
   }
-  
+
 }
 

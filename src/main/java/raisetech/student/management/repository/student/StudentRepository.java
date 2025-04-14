@@ -123,5 +123,5 @@ public interface StudentRepository {
    * @return 該当するステータス情報リスト
    */
   List<CourseStatus> findStatus(StudentSearchDTO condition);
-  
+
 }
