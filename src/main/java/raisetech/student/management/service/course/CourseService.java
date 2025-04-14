@@ -27,7 +27,7 @@ public class CourseService {
   public CourseService(CourseRepository repository) {
     this.repository = repository;
   }
-  
+
   /**
    * 【コースマスタの全件取得】
    *
@@ -61,16 +61,18 @@ public class CourseService {
    *
    * @param course 入力された更新情報（コースマスタ）
    */
-  public void updateCourseMaster(Course course) {
+  public void updateCourseMaster(Integer courseId, Course course) {
 
     // 事前に対象のコースマスタを検索（なければ例外throw）
-    Integer targetCourseId = course.getCourseId();
-    Course courseExist = repository.searchCourseMaster(targetCourseId);
+    Course courseExist = repository.searchCourseMaster(courseId);
     if (courseExist == null) {
       throw new NoDataException(
-          "更新対象のコースマスタが見つかりません。[ID: " + targetCourseId + " ]"
+          "更新対象のコースマスタが見つかりません。[ID: " + courseId + " ]"
       );
     }
+
+    // リクエストボディのcourseIdをパスパラメータのものに統一
+    course.setCourseId(courseId);
 
     int updateMasterData = repository.updateCourseMaster(course);
 

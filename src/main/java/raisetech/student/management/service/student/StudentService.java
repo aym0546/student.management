@@ -166,7 +166,7 @@ public class StudentService {
   @Transactional
   public void updateStudent(Integer studentId, StudentDetail studentDetail) {
     // ここに遷移した時点で既に特定のstudentIdのstudentDetailが呼び出されている
-    // パスパラメータとリクエストボディのstudentIdをパスパラメータのものに統一
+    // リクエストボディのstudentIdをパスパラメータのものに統一
     studentDetail.getStudent().setStudentId(studentId);
 
     // 事前に対象の受講生情報を検索（なければ例外throw）

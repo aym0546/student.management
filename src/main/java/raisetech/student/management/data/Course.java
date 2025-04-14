@@ -8,7 +8,6 @@ import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
-import org.apache.ibatis.annotations.Update;
 
 @Schema(description = "コースマスタ")
 @Getter
@@ -18,7 +17,6 @@ import org.apache.ibatis.annotations.Update;
 public class Course {
 
   @Schema(description = "コースID", example = "1")
-  @NotNull(groups = Update.class, message = "更新時には受講IDが必須です。")
   private Integer courseId;
 
   @Schema(description = "コース名", example = "Javaコース")

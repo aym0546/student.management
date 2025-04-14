@@ -9,6 +9,7 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyInt;
+import static org.mockito.ArgumentMatchers.eq;
 import org.mockito.Mockito;
 import static org.mockito.Mockito.doNothing;
 import static org.mockito.Mockito.times;
@@ -41,7 +42,7 @@ class CourseControllerTest {
   private CourseService service; // モックBeanを注入
 
   private Course course;
-  
+
   // テスト用のモックBeanを定義
   @TestConfiguration
   static class MockConfig {
@@ -132,13 +133,13 @@ class CourseControllerTest {
         .disable(SerializationFeature.WRITE_DATES_AS_TIMESTAMPS);
     String request = objectMapper.writeValueAsString(course);
 
-    mockMvc.perform(MockMvcRequestBuilders.put("/courses")
+    mockMvc.perform(MockMvcRequestBuilders.put("/courses/1")
             .contentType(MediaType.APPLICATION_JSON)
             .content(request))
         .andExpect(status().isOk())
         .andExpect(content().string("コース名：【 Javaコース 】の更新処理が成功しました。"));
 
-    verify(service, times(1)).updateCourseMaster(any());
+    verify(service, times(1)).updateCourseMaster(eq(1), any());
   }
 
   @Test

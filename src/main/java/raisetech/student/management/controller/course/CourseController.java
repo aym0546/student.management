@@ -100,10 +100,11 @@ public class CourseController {
       @ApiResponse(responseCode = "404", description = "更新対象コースマスタが見つかりません"),
       @ApiResponse(responseCode = "500", description = "サーバーエラー"),
   })
-  @PutMapping
+  @PutMapping("/{courseId}")
   public ResponseEntity<String> updateCourseMaster(
+      @PathVariable Integer courseId,
       @RequestBody @Validated({Default.class, Update.class}) Course course) {
-    service.updateCourseMaster(course);
+    service.updateCourseMaster(courseId, course);
     return ResponseEntity.ok(
         "コース名：【 " + course.getCourseName() + " 】の更新処理が成功しました。");
   }
@@ -125,5 +126,5 @@ public class CourseController {
     service.deleteCourseMaster(courseId);
     return ResponseEntity.noContent().build();
   }
-  
+
 }

@@ -1,13 +1,13 @@
 package raisetech.student.management.service.course;
 
-import java.sql.Timestamp;
-import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.junit.jupiter.api.Assertions.assertDoesNotThrow;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -22,6 +22,7 @@ import raisetech.student.management.data.Course;
 import raisetech.student.management.data.Course.CourseCategory;
 import raisetech.student.management.data.Course.CourseName;
 import raisetech.student.management.exception.NoDataException;
+import raisetech.student.management.exception.ProcessFailedException;
 import raisetech.student.management.repository.course.CourseRepository;
 
 @ExtendWith(MockitoExtension.class)
@@ -32,9 +33,19 @@ class CourseServiceTest {
 
   private CourseService sut;
 
+  Integer courseId;
+  Course input;
+  Course exist;
+
   @BeforeEach
   void before() {
     sut = new CourseService(repository);
+
+    courseId = 1;
+    input = new Course(
+        courseId, CourseName.Javaコース, CourseCategory.開発系コース, 6, false, null, null);
+    exist = new Course(
+        courseId, CourseName.AWSコース, CourseCategory.開発系コース, 3, false, null, null);
   }
 
   @Test
@@ -60,12 +71,39 @@ class CourseServiceTest {
   }
 
   @Test
+  void コースマスタの更新_正常に更新されること() {
+    when(repository.searchCourseMaster(courseId)).thenReturn(exist);
+    when(repository.updateCourseMaster(any(Course.class))).thenReturn(1);
+
+    assertDoesNotThrow(() -> sut.updateCourseMaster(courseId, input));
+
+    verify(repository).updateCourseMaster(input);
+  }
+
+  @Test
+  void コースマスタの更新_該当するコースが存在しない場合にNoDataExceptionをスローすること() {
+    when(repository.searchCourseMaster(courseId)).thenReturn(null);
+
+    var ex = assertThrows(NoDataException.class,
+        () -> sut.updateCourseMaster(courseId, input));
+
+    assertTrue(ex.getMessage().contains("更新対象のコースマスタが見つかりません"));
+  }
+
+  @Test
+  void コースマスタの更新_更新件数が0の場合にProcessFailedExceptionをスローすること() {
+    when(repository.searchCourseMaster(courseId)).thenReturn(exist);
+    when(repository.updateCourseMaster(any(Course.class))).thenReturn(0);
+
+    var ex = assertThrows(ProcessFailedException.class,
+        () -> sut.updateCourseMaster(courseId, input));
+
+    assertEquals("コースマスタは更新されませんでした。", ex.getMessage());
+  }
+
+  @Test
   void コースマスタの削除_リポジトリを適切に呼び出し引数を渡せていること() {
-    var courseId = 1;
-    var master = new Course(courseId, CourseName.Javaコース, CourseCategory.開発系コース, 999,
-        false, Timestamp.valueOf(LocalDateTime.now()),
-        Timestamp.valueOf(LocalDateTime.now().plusMonths(6)));
-    when(repository.searchCourseMaster(courseId)).thenReturn(master);
+    when(repository.searchCourseMaster(courseId)).thenReturn(input);
 
     sut.deleteCourseMaster(courseId);
 
