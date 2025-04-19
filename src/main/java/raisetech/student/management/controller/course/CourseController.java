@@ -50,7 +50,7 @@ public class CourseController {
    *
    * @return コースマスタリスト（全件）
    */
-  @Operation(summary = "コースマスタ取得", description = "コースマスタを全件取得します")
+  @Operation(summary = "コースマスタ全件取得", description = "コースマスタを全件取得します")
   @ApiResponses(value = {
       @ApiResponse(responseCode = "200", description = "成功"),
       @ApiResponse(responseCode = "404", description = "コースマスタが見つかりません"),

@@ -55,9 +55,19 @@
 
   <!-- 受講生情報の更新 -->
   <update id="updateStudent">
-    UPDATE students SET full_name = #{fullName}, name_pronunciation = #{namePronunciation}, nickname
-    = #{nickname}, email = #{email}, area = #{area}, birth_date = #{birthDate}, gender = #{gender},
-    remark = #{remark}, is_deleted = #{isDeleted} WHERE student_id = #{studentId}
+    UPDATE students
+    <set>
+      <if test="fullName != null">full_name = #{fullName},</if>
+      <if test="namePronunciation != null">name_pronunciation = #{namePronunciation},</if>
+      <if test="nickname != null">nickname = #{nickname},</if>
+      <if test="email != null">email = #{email},</if>
+      <if test="area != null">area = #{area},</if>
+      <if test="birthDate != null">birth_date = #{birthDate},</if>
+      <if test="gender != null">gender = #{gender},</if>
+      <if test="remark != null">remark = #{remark},</if>
+      <if test="isDeleted != null">is_deleted = #{isDeleted},</if>
+    </set>
+    WHERE student_id = #{studentId}
   </update>
 
   <!-- コース情報の更新 -->
@@ -132,33 +142,5 @@
       </if>
     </where>
   </select>
-
-  <!--  &lt;!&ndash; コースマスタの全件取得 &ndash;&gt;-->
-  <!--  <select id="displayCourseMaster" resultType="raisetech.student.management.data.Course">-->
-  <!--    SELECT * FROM courses-->
-  <!--  </select>-->
-
-  <!--  &lt;!&ndash; コースマスタの新規作成 &ndash;&gt;-->
-  <!--  <insert id="registerCourseMaster" useGeneratedKeys="true" keyProperty="courseId">-->
-  <!--    INSERT INTO courses(course_name, category, duration)-->
-  <!--    VALUES (#{courseName}, #{category}, #{duration})-->
-  <!--  </insert>-->
-
-  <!--  &lt;!&ndash; コースマスタのID検索 &ndash;&gt;-->
-  <!--  <select id="searchCourseMaster" resultType="raisetech.student.management.data.Course">-->
-  <!--    SELECT * FROM courses WHERE course_id = #{courseId}-->
-  <!--  </select>-->
-
-  <!--  &lt;!&ndash; コースマスタの更新 &ndash;&gt;-->
-  <!--  <update id="updateCourseMaster">-->
-  <!--    UPDATE courses-->
-  <!--    SET course_name = #{courseName}, category = #{category}, duration = #{duration}, is_closed =-->
-  <!--    #{isClosed} WHERE course_id = #{courseId}-->
-  <!--  </update>-->
-
-  <!--  &lt;!&ndash; コースマスタの削除 &ndash;&gt;-->
-  <!--  <delete id="deleteCourseMaster">-->
-  <!--    DELETE FROM courses WHERE course_id = #{courseId}-->
-  <!--  </delete>-->
 
 </mapper>

@@ -219,4 +219,24 @@ public class StudentService {
 
   }
 
+  @Transactional
+  public void updateStudentIsDeleted(Integer studentId, Boolean isDeleted) {
+
+    // 事前に対象の受講生情報を検索（なければ例外throw）
+    Student studentExist = studentRepository.searchStudent(studentId);
+    if (studentExist == null) {
+      throw new NoDataException(
+          "更新対象の受講生情報が見つかりません。[ID: " + studentId + " ]");
+    }
+    Student update = new Student();
+    update.setStudentId(studentId);
+    update.setDeleted(isDeleted);
+
+    int updated = studentRepository.updateStudent(update);
+    if (updated == 0) {
+      throw new ProcessFailedException("更新が反映されませんでした");
+    }
+
+  }
+
 }
