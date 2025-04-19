@@ -10,7 +10,7 @@ import raisetech.student.management.data.Course;
  */
 @Mapper
 public interface CourseRepository {
-  
+
   /**
    * 【コースマスタの全件取得】
    *
@@ -40,10 +40,4 @@ public interface CourseRepository {
    */
   int updateCourseMaster(Course course);
 
-  /**
-   * 【コースマスタの削除】
-   *
-   * @param courseId 削除対象のコースID
-   */
-  void deleteCourseMaster(@Valid Integer courseId);
 }

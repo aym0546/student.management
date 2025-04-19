@@ -8,13 +8,14 @@ import jakarta.validation.Valid;
 import jakarta.validation.groups.Default;
 import java.net.URI;
 import java.util.List;
+import java.util.Map;
 import org.apache.ibatis.annotations.Update;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.validation.annotation.Validated;
-import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PatchMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.PutMapping;
@@ -22,6 +23,7 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 import raisetech.student.management.data.Course;
+import raisetech.student.management.exception.ProcessFailedException;
 import raisetech.student.management.service.course.CourseService;
 
 /**
@@ -110,21 +112,28 @@ public class CourseController {
   }
 
   /**
-   * 【コースマスタの削除】
+   * 【コースマスタをクローズ】
    *
-   * @param courseId 削除対象のコースマスタID
+   * @param courseId 対象コースマスタのID
    */
-  @Operation(summary = "コースマスタ削除", description = "既存のコースマスタを削除します。")
+  @Operation(summary = "コースマスタ閉講", description = "開講中のコースマスタを閉講に変更")
   @ApiResponses(value = {
-      @ApiResponse(responseCode = "204", description = "コースマスタ削除に成功しました"),
-      @ApiResponse(responseCode = "400", description = "削除に失敗しました"),
-      @ApiResponse(responseCode = "404", description = "削除対象コースマスタが見つかりません"),
-      @ApiResponse(responseCode = "500", description = "サーバーエラー"),
+      @ApiResponse(responseCode = "200", description = "成功"),
+      @ApiResponse(responseCode = "400", description = "更新処理に失敗しました"),
+      @ApiResponse(responseCode = "500", description = "サーバーエラー")
   })
-  @DeleteMapping("/{courseId}")
-  public ResponseEntity<String> deleteCourseMaster(@PathVariable @Valid Integer courseId) {
-    service.deleteCourseMaster(courseId);
-    return ResponseEntity.noContent().build();
-  }
+  @PatchMapping("/{courseId}")
+  public ResponseEntity<Void> patchCourseMaster(
+      @PathVariable Integer courseId,
+      @RequestBody Map<String, Boolean> requestBody) {
 
+    Boolean isClosed = requestBody.get("closed");
+    if (isClosed == null) {
+      throw new ProcessFailedException("closed の値が必要です");
+    }
+
+    service.updateCourseMasterIsClosed(courseId, isClosed);
+    return ResponseEntity.noContent().build();
+
+  }
 }

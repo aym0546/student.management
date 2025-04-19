@@ -155,7 +155,7 @@ public class StudentController {
 
     Boolean isDeleted = requestBody.get("deleted");
     if (isDeleted == null) {
-      throw new ProcessFailedException("deleted の値は必須です");
+      throw new ProcessFailedException("deleted の値が必須です");
     }
     service.updateStudentIsDeleted(studentId, isDeleted);
     return ResponseEntity.noContent().build();

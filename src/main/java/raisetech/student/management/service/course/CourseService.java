@@ -1,9 +1,9 @@
 package raisetech.student.management.service.course;
 
-import jakarta.validation.Valid;
 import java.util.List;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 import raisetech.student.management.data.Course;
 import raisetech.student.management.exception.NoDataException;
 import raisetech.student.management.exception.ProcessFailedException;
@@ -84,11 +84,12 @@ public class CourseService {
   }
 
   /**
-   * 【コースマスタの削除】
+   * [【コースマスタをクローズ】
    *
-   * @param courseId 削除対象のコースID
+   * @param courseId 対象コースマスタのID
    */
-  public void deleteCourseMaster(@Valid Integer courseId) {
+  @Transactional
+  public void updateCourseMasterIsClosed(Integer courseId, Boolean isClosed) {
 
     // 事前に対象のコースマスタを検索（なければ例外throw）
     Course courseExist = repository.searchCourseMaster(courseId);
@@ -96,6 +97,13 @@ public class CourseService {
       throw new NoDataException("削除対象が見つかりません。[ID: " + courseId + " ]");
     }
 
-    repository.deleteCourseMaster(courseId);
+    Course update = new Course();
+    update.setCourseId(courseId);
+    update.setClosed(isClosed);
+
+    int updated = repository.updateCourseMaster(update);
+    if (updated == 0) {
+      throw new ProcessFailedException("更新が反映されませんでした");
+    }
   }
 }
