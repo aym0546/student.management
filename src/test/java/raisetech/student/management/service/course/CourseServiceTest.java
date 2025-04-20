@@ -2,7 +2,6 @@ package raisetech.student.management.service.course;
 
 import java.util.ArrayList;
 import java.util.List;
-import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.jupiter.api.Assertions.assertDoesNotThrow;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
@@ -13,7 +12,6 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.Mock;
 import static org.mockito.Mockito.any;
-import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
@@ -102,29 +100,41 @@ class CourseServiceTest {
   }
 
   @Test
-  void コースマスタの削除_リポジトリを適切に呼び出し引数を渡せていること() {
+  void コースマスタのクローズ_部分更新処理が成功すること() {
+    input.setCourseId(1);
+    var isClosed = true;
+
     when(repository.searchCourseMaster(courseId)).thenReturn(input);
+    when(repository.updateCourseMaster(any(Course.class))).thenReturn(1);
 
-    sut.deleteCourseMaster(courseId);
-
-    verify(repository, times(1)).searchCourseMaster(courseId);
-    verify(repository, times(1)).deleteCourseMaster(courseId);
+    assertDoesNotThrow(() -> sut.updateCourseMasterIsClosed(courseId, isClosed));
+    verify(repository).updateCourseMaster(any(Course.class));
   }
 
   @Test
-  void コースマスタの削除_存在しないIDの場合_例外が発生すること() {
-
-    // 存在しないIDを検索するとnullを返す
-    Integer courseId = 999;
+  void コースマスタのクローズ_該当IDが存在しない時_NoDataExceptionをスローすること() {
+    int courseId = 999;
     when(repository.searchCourseMaster(courseId)).thenReturn(null);
 
-    // 実行によりNoDataExceptionが発生することを確認
-    NoDataException exception = assertThrows(
-        NoDataException.class, () -> sut.deleteCourseMaster(courseId)
-    );
-    assertThat(exception.getMessage()).isEqualTo("削除対象が見つかりません。[ID: 999 ]");
+    var ex = assertThrows(NoDataException.class,
+        () -> sut.updateCourseMasterIsClosed(courseId, true));
 
-    // deleteCourseMasterメソッドが一度も呼ばれていないことを確認
-    verify(repository, never()).deleteCourseMaster(any());
+    assertTrue(ex.getMessage().contains("削除対象が見つかりません。"));
   }
+
+  @Test
+  void コースマスタのクローズ_更新件数0の時_ProcessFailedExceptionをスローすること() {
+    courseId = 1;
+    Boolean isClosed = true;
+    input = new Course();
+    input.setCourseId(courseId);
+
+    when(repository.searchCourseMaster(courseId)).thenReturn(input);
+    when(repository.updateCourseMaster(any(Course.class))).thenReturn(0);
+
+    var ex = assertThrows(ProcessFailedException.class,
+        () -> sut.updateCourseMasterIsClosed(courseId, isClosed));
+    assertEquals("更新が反映されませんでした", ex.getMessage());
+  }
+
 }

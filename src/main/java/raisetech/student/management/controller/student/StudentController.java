@@ -24,7 +24,7 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 import raisetech.student.management.domain.StudentDetail;
-import raisetech.student.management.exception.ProcessFailedException;
+import raisetech.student.management.exception.MissingParameterException;
 import raisetech.student.management.service.student.StudentService;
 
 /**
@@ -151,11 +151,11 @@ public class StudentController {
   @PatchMapping("/{studentId}")
   public ResponseEntity<Void> patchStudent(
       @PathVariable Integer studentId,
-      @RequestBody Map<String, Boolean> requestBody) {
+      @RequestBody Map<String, Boolean> requestBody) throws MissingParameterException {
 
     Boolean isDeleted = requestBody.get("deleted");
     if (isDeleted == null) {
-      throw new ProcessFailedException("deleted の値が必須です");
+      throw new MissingParameterException("deleted の値が必須です");
     }
     service.updateStudentIsDeleted(studentId, isDeleted);
     return ResponseEntity.noContent().build();

@@ -23,7 +23,7 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 import raisetech.student.management.data.Course;
-import raisetech.student.management.exception.ProcessFailedException;
+import raisetech.student.management.exception.MissingParameterException;
 import raisetech.student.management.service.course.CourseService;
 
 /**
@@ -112,13 +112,13 @@ public class CourseController {
   }
 
   /**
-   * 【コースマスタをクローズ】
+   * 【コースマスタのクローズ】
    *
    * @param courseId 対象コースマスタのID
    */
   @Operation(summary = "コースマスタ閉講", description = "開講中のコースマスタを閉講に変更")
   @ApiResponses(value = {
-      @ApiResponse(responseCode = "200", description = "成功"),
+      @ApiResponse(responseCode = "204", description = "成功"),
       @ApiResponse(responseCode = "400", description = "更新処理に失敗しました"),
       @ApiResponse(responseCode = "500", description = "サーバーエラー")
   })
@@ -129,7 +129,7 @@ public class CourseController {
 
     Boolean isClosed = requestBody.get("closed");
     if (isClosed == null) {
-      throw new ProcessFailedException("closed の値が必要です");
+      throw new MissingParameterException("closed の値が必要です");
     }
 
     service.updateCourseMasterIsClosed(courseId, isClosed);

@@ -219,15 +219,19 @@ public class StudentService {
 
   }
 
+  /**
+   * 【受講生情報の論理削除】指定されたIDの受講生情報を非表示にする
+   *
+   * @param studentId 削除対象の受講生ID
+   * @param isDeleted 非表示にするかどうかのフラグ
+   */
   @Transactional
   public void updateStudentIsDeleted(Integer studentId, Boolean isDeleted) {
 
-    // 事前に対象の受講生情報を検索（なければ例外throw）
-    Student studentExist = studentRepository.searchStudent(studentId);
-    if (studentExist == null) {
-      throw new NoDataException(
-          "更新対象の受講生情報が見つかりません。[ID: " + studentId + " ]");
-    }
+    Student studentExist = Optional.ofNullable(studentRepository.searchStudent(studentId))
+        .orElseThrow(() -> new NoDataException(
+            "更新対象の受講生情報が見つかりません。[ID: " + studentId + " ]"));
+
     Student update = new Student();
     update.setStudentId(studentId);
     update.setDeleted(isDeleted);

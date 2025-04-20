@@ -5,6 +5,7 @@ import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.junit.jupiter.api.Assertions.assertDoesNotThrow;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertThrows;
@@ -345,4 +346,42 @@ class StudentServiceTest {
     assertThrows(ProcessFailedException.class, () -> sut.updateStudent(studentId, studentDetail));
   }
 
+  @Test
+  void 受講生情報の論理削除_部分更新処理が成功すること() {
+    student = new Student();
+    student.setStudentId(1);
+    var isDeleted = true;
+
+    when(studentRepository.searchStudent(studentId)).thenReturn(student);
+    when(studentRepository.updateStudent(any(Student.class))).thenReturn(1);
+
+    assertDoesNotThrow(() -> sut.updateStudentIsDeleted(studentId, isDeleted));
+    verify(studentRepository).updateStudent(any(Student.class));
+  }
+
+  @Test
+  void 受講生情報の論理削除_該当IDが存在しない時_NoDataExceptionをスローすること() {
+    studentId = 999;
+    when(studentRepository.searchStudent(studentId)).thenReturn(null);
+
+    var ex = assertThrows(NoDataException.class,
+        () -> sut.updateStudentIsDeleted(studentId, true));
+
+    assertTrue(ex.getMessage().contains("更新対象の受講生情報が見つかりません。"));
+  }
+
+  @Test
+  void 受講生情報の論理削除_更新件数0の時_ProcessFailedExceptionをスローすること() {
+    studentId = 1;
+    Boolean isDeleted = true;
+    student = new Student();
+    student.setStudentId(studentId);
+
+    when(studentRepository.searchStudent(studentId)).thenReturn(student);
+    when(studentRepository.updateStudent(any(Student.class))).thenReturn(0);
+
+    var ex = assertThrows(ProcessFailedException.class,
+        () -> sut.updateStudentIsDeleted(studentId, isDeleted));
+    assertEquals("更新が反映されませんでした", ex.getMessage());
+  }
 }

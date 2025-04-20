@@ -6,6 +6,7 @@ import java.util.List;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 import org.junit.jupiter.api.Test;
 import org.mybatis.spring.boot.test.autoconfigure.MybatisTest;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -58,7 +59,7 @@ class CourseRepositoryTest {
   }
 
   @Test
-  void コースマスタの更新が行えること() {
+  void コースマスタの更新_全項目が非null_正常に更新が行えること() {
 
     // 更新するコースマスタオブジェクト
     var course = new Course(1, CourseName.Javaコース, CourseCategory.開発系コース, 6, false,
@@ -70,36 +71,24 @@ class CourseRepositoryTest {
 
     // 更新後にDBから確認
     var updatedCourse = sut.searchCourseMaster(1);
+
     assertNotNull(updatedCourse);
     assertEquals(course, updatedCourse);
-
   }
 
   @Test
-  void コースマスタの削除が行えること() {
-    // テスト用データを挿入
-    var course = new Course(CourseName.Javaコース, CourseCategory.開発系コース, 6);
-    sut.registerCourseMaster(course);
+  void コースマスタの更新_部分更新_クローズ状態の更新が行えること() {
 
-    // 挿入後のテストデータ数をチェック
-    assertThat(sut.displayCourseMaster().size()).isEqualTo(8);
+    // 更新するコースマスタオブジェクト
+    var update = new Course();
+    update.setCourseId(1);
+    update.setClosed(true);
 
-    // 削除実行
-    sut.deleteCourseMaster(8);
+    int updated = sut.updateCourseMaster(update);
+    var result = sut.searchCourseMaster(1);
 
-    // データ数が1減っていることを確認
-    assertThat(sut.displayCourseMaster().size()).isEqualTo(7);
+    assertEquals(1, updated);
+    assertNotNull(result);
+    assertTrue(result.isClosed());
   }
-
-  @Test
-  void コースマスタの削除ができ_存在しないIDで削除してもエラーが起きないこと() {
-
-    // 存在しないIDで実行
-    sut.deleteCourseMaster(999);
-
-    // 他のデータが影響を受けないことを確認
-    assertThat(sut.displayCourseMaster().size()).isEqualTo(7);
-
-  }
-
 }

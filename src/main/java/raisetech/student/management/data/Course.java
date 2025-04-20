@@ -60,6 +60,7 @@ public class Course {
       return false;
     }
     return duration == course.duration && Objects.equals(courseId, course.courseId)
-        && courseName == course.courseName && category == course.category;
+        && courseName == course.courseName && category == course.category &&
+        Objects.equals(isClosed, course.isClosed);
   }
 }

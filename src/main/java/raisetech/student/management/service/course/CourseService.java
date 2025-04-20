@@ -84,7 +84,7 @@ public class CourseService {
   }
 
   /**
-   * [【コースマスタをクローズ】
+   * [【コースマスタのクローズ】
    *
    * @param courseId 対象コースマスタのID
    */
