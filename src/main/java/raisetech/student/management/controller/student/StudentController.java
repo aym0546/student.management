@@ -1,4 +1,4 @@
-package raisetech.student.management.controller;
+package raisetech.student.management.controller.student;
 
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
@@ -9,26 +9,31 @@ import jakarta.validation.Valid;
 import jakarta.validation.groups.Default;
 import java.net.URI;
 import java.util.List;
+import java.util.Map;
 import org.apache.ibatis.annotations.Update;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PatchMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 import raisetech.student.management.domain.StudentDetail;
-import raisetech.student.management.service.StudentService;
+import raisetech.student.management.exception.MissingParameterException;
+import raisetech.student.management.service.student.StudentService;
 
 /**
  * 受講生の検索や登録、更新などを行うREST APIとして受け付けるControllerです。
  */
 @Validated
 @RestController
-@Tag(name = "受講生管理", description = "受講生の登録・検索・更新を行うAPI")
+@RequestMapping("/students")
+@Tag(name = "受講生管理", description = "受講生情報の登録・検索・更新を行うAPI")
 public class StudentController {
 
   private final StudentService service;
@@ -49,13 +54,13 @@ public class StudentController {
    * @param searchForm リクエスト情報
    * @return 該当する受講生詳細情報のリスト
    */
-  @Operation(summary = "詳細検索", description = "クエリパラメータから取得した条件で検索を行います。")
+  @Operation(summary = "受講生詳細検索", description = "クエリパラメータから取得した条件で検索を行います。")
   @ApiResponses(value = {
       @ApiResponse(responseCode = "200", description = "成功"),
       @ApiResponse(responseCode = "404", description = "該当する受講生が見つかりません"),
       @ApiResponse(responseCode = "500", description = "サーバーエラー")
   })
-  @GetMapping("/students")  // GET /students?__=__
+  @GetMapping  // GET /students?__=__
   public ResponseEntity<List<StudentDetail>> searchStudents(StudentSearchForm searchForm) {
 
     List<StudentDetail> studentDetails = service.getStudentList(searchForm.toDTO());
@@ -78,7 +83,7 @@ public class StudentController {
       @ApiResponse(responseCode = "400", description = "更新処理に失敗しました"),
       @ApiResponse(responseCode = "500", description = "サーバーエラー")
   })
-  @PostMapping("/students")
+  @PostMapping
   public ResponseEntity<StudentDetail> registerStudent(
       @RequestBody @Valid StudentDetail studentDetail) {
 
@@ -100,7 +105,7 @@ public class StudentController {
       @ApiResponse(responseCode = "404", description = "該当する受講生が見つかりません"),
       @ApiResponse(responseCode = "500", description = "サーバーエラー")
   })
-  @GetMapping("/students/{studentId}")
+  @GetMapping("/{studentId}")
   public StudentDetail getStudent(
       @Parameter(description = "検索する受講生のID", example = "12")
       @PathVariable @Valid Integer studentId) {
@@ -110,6 +115,7 @@ public class StudentController {
   /**
    * 【受講生更新】 指定されたIDの受講生詳細情報を更新する。 キャンセルフラグの更新も行う（論理削除）
    *
+   * @param studentId     更新対象の受講生ID
    * @param studentDetail 更新される入力情報（受講生詳細情報）
    * @return 実行結果
    */
@@ -119,25 +125,41 @@ public class StudentController {
       @ApiResponse(responseCode = "400", description = "更新処理に失敗しました"),
       @ApiResponse(responseCode = "500", description = "サーバーエラー")
   })
-  @PutMapping("/students")
+  @PutMapping("/{studentId}")
   public ResponseEntity<String> updateStudent(
+      @PathVariable Integer studentId,
       @RequestBody @Validated({Default.class, Update.class}) StudentDetail studentDetail) {
-    service.updateStudent(studentDetail);
+    service.updateStudent(studentId, studentDetail);
     return ResponseEntity.ok(
-        studentDetail.getStudent().getFullName() + "さんの更新処理が成功しました。");
+        studentDetail.getStudent().getFullName() + " さんの更新処理が成功しました。");
     // 更新が完了したらレスポンスとしてOK(200)とメッセージを返す。
   }
 
   /**
-   * 【リダイレクト】 旧URIが指定された場合に、正しいURI"/students"にリダイレクトする。
+   * 【受講生論理削除】 指定されたIDの受講生情報を非表示にする。
    *
-   * @return /students リダイレクト
+   * @param studentId   更新（論理削除）対象の受講生ID
+   * @param requestBody 更新される入力情報（論理削除）
+   * @return 実行結果
    */
-  @Operation(summary = "/students リダイレクト", description = "旧URIのハンドリングメソッドです。")
-  @GetMapping("/studentList")
-  public ResponseEntity<Void> redirectStudents() {
-    return ResponseEntity.status(HttpStatus.SEE_OTHER)
-        .location(URI.create("/students")).build();
+  @Operation(summary = "受講生論理削除", description = "指定IDの受講生情報を非表示にします。")
+  @ApiResponses(value = {
+      @ApiResponse(responseCode = "204", description = "成功"),
+      @ApiResponse(responseCode = "400", description = "更新処理に失敗しました"),
+      @ApiResponse(responseCode = "500", description = "サーバーエラー")
+  })
+  @PatchMapping("/{studentId}")
+  public ResponseEntity<Void> patchStudent(
+      @PathVariable Integer studentId,
+      @RequestBody Map<String, Boolean> requestBody) throws MissingParameterException {
+
+    Boolean isDeleted = requestBody.get("deleted");
+    if (isDeleted == null) {
+      throw new MissingParameterException("deleted の値が必須です");
+    }
+    service.updateStudentIsDeleted(studentId, isDeleted);
+    return ResponseEntity.noContent().build();
   }
 
 }
+

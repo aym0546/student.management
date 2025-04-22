@@ -116,6 +116,18 @@ public class GlobalExceptionHandler {
     return ResponseEntity.status(HttpStatus.NOT_FOUND).body(ex.getMessage());
   }
 
+  // リクエストにパラメータが含まれていない
+  @ExceptionHandler(MissingParameterException.class)
+  public ResponseEntity<String> handleMissingParameterException(MissingParameterException ex) {
+    return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(ex.getMessage());
+  }
+
+  // 処理が想定外に失敗（カウント0）した時
+  @ExceptionHandler(ProcessFailedException.class)
+  public ResponseEntity<String> handleProcessFailedException(ProcessFailedException ex) {
+    return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(ex.getMessage());
+  }
+
   // その他の例外
   @ExceptionHandler(Exception.class)
   public ResponseEntity<String> handleOtherException(Exception ex) {

@@ -1,4 +1,4 @@
-package raisetech.student.management.repository;
+package raisetech.student.management.repository.student;
 
 import java.time.LocalDate;
 import java.time.LocalDateTime;
@@ -174,7 +174,7 @@ class StudentRepositoryTest {
   }
 
   @Test
-  void findStudent_検索条件に一致する受講生が取得できること() {
+  void 受講生情報の詳細検索_検索条件に一致する受講生が取得できること() {
     // 検索条件
     var condition = new StudentSearchDTO(
         "中村", LocalDate.of(1999, 12, 31), LocalDate.of(2000, 12, 31), null, null, null, null,
@@ -187,7 +187,7 @@ class StudentRepositoryTest {
   }
 
   @Test
-  void findCourse_検索条件に一致する受講コースが取得できること() {
+  void 受講コース情報の詳細検索_検索条件に一致する受講コースが取得できること() {
     // 検索条件
     var condition = new StudentSearchDTO(
         null, null, null, null, null, null, null,
@@ -200,7 +200,7 @@ class StudentRepositoryTest {
   }
 
   @Test
-  void findStatus_検索条件に一致するステータスが取得できること() {
+  void ステータス情報の詳細検索_検索条件に一致するステータスが取得できること() {
     // 検索条件
     var condition = new StudentSearchDTO(
         null, null, null, null, null, null, null,

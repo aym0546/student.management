@@ -1,4 +1,4 @@
-package raisetech.student.management.controller.converter;
+package raisetech.student.management.converter.student;
 
 import java.time.LocalDate;
 import java.time.LocalDateTime;
@@ -105,7 +105,7 @@ class StudentConverterTest {
     assertThat(actual)
         .usingRecursiveComparison()
         .isEqualTo(expected);
-    
+
   }
 
 }

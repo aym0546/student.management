@@ -1,4 +1,4 @@
-package raisetech.student.management.repository;
+package raisetech.student.management.repository.student;
 
 import java.util.List;
 import org.apache.ibatis.annotations.Mapper;
@@ -123,4 +123,5 @@ public interface StudentRepository {
    * @return 該当するステータス情報リスト
    */
   List<CourseStatus> findStatus(StudentSearchDTO condition);
+
 }

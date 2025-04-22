@@ -1,11 +1,11 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
   "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
-<mapper namespace="raisetech.student.management.repository.StudentRepository">
+<mapper namespace="raisetech.student.management.repository.student.StudentRepository">
 
   <!-- 受講生の一覧表示 -->
   <select id="displayStudent" resultType="raisetech.student.management.data.Student">
-    SELECT * FROM students
+    SELECT * FROM students WHERE is_deleted = 0
   </select>
 
   <!-- コース情報の一覧表示 -->
@@ -20,7 +20,7 @@
 
   <!-- 受講生検索 -->
   <select id="searchStudent" resultType="raisetech.student.management.data.Student">
-    SELECT * FROM students WHERE student_id = #{studentId}
+    SELECT * FROM students WHERE student_id = #{studentId} AND is_deleted = 0
   </select>
 
   <!-- コース情報検索 -->
@@ -36,9 +36,9 @@
   <!-- 受講生情報の登録 -->
   <insert id="registerStudent" useGeneratedKeys="true" keyProperty="studentId">
     INSERT INTO students(full_name, name_pronunciation, nickname, email, area, birth_date, gender,
-    remark, is_deleted)
+    remark)
     VALUES (#{fullName}, #{namePronunciation}, #{nickname}, #{email}, #{area}, #{birthDate},
-    #{gender}, #{remark}, false)
+    #{gender}, #{remark})
   </insert>
 
   <!-- コース情報の登録 -->
@@ -55,9 +55,19 @@
 
   <!-- 受講生情報の更新 -->
   <update id="updateStudent">
-    UPDATE students SET full_name = #{fullName}, name_pronunciation = #{namePronunciation}, nickname
-    = #{nickname}, email = #{email}, area = #{area}, birth_date = #{birthDate}, gender = #{gender},
-    remark = #{remark}, is_deleted = #{isDeleted} WHERE student_id = #{studentId}
+    UPDATE students
+    <set>
+      <if test="fullName != null">full_name = #{fullName},</if>
+      <if test="namePronunciation != null">name_pronunciation = #{namePronunciation},</if>
+      <if test="nickname != null">nickname = #{nickname},</if>
+      <if test="email != null">email = #{email},</if>
+      <if test="area != null">area = #{area},</if>
+      <if test="birthDate != null">birth_date = #{birthDate},</if>
+      <if test="gender != null">gender = #{gender},</if>
+      <if test="remark != null">remark = #{remark},</if>
+      <if test="isDeleted != null">is_deleted = #{isDeleted},</if>
+    </set>
+    WHERE student_id = #{studentId}
   </update>
 
   <!-- コース情報の更新 -->
@@ -74,8 +84,11 @@
   <select id="findStudent" resultType="raisetech.student.management.data.Student">
     SELECT DISTINCT * FROM students
     <where>
+      <if test="true">
+        is_deleted = 0
+      </if>
       <if test='name != null and !name.isBlank()'>
-        (
+        AND (
         full_name LIKE CONCAT('%', #{name}, '%')
         OR name_pronunciation LIKE CONCAT('%', #{name}, '%')
         OR nickname LIKE CONCAT('%', #{name}, '%')
@@ -129,4 +142,5 @@
       </if>
     </where>
   </select>
+
 </mapper>
