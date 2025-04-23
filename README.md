@@ -27,7 +27,7 @@ erDiagram
         date birth_date "誕生日"
         enum gender "[Male, Female, Other]"
         varchar(200) remark "備考"
-        boolean is_deleted "キャンセルフラグ"
+        boolean is_deleted "論理削除"
     }
 
     students_courses {
@@ -58,9 +58,8 @@ erDiagram
         int status_id PK "ステータスID"
         varchar(20) status_name "ステータス名"
         int display_order "表示順制御"
-        boolean is_active "現在進行中か"
-        boolean is_final "最終ステータスか"
-        boolean allow_new_registration "新規受講が可能か"
+        boolean is_active "進行中"
+        boolean is_final "最終状態"
         timestamp created_at
         timestamp updated_at
     }
