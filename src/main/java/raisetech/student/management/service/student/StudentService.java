@@ -142,11 +142,19 @@ public class StudentService {
       }
 
       // ステータス情報の登録
-      Optional.ofNullable(courseDetail.getStatus()).ifPresent(
-          status ->
-              status.setAttendingId(courseDetail.getCourse().getAttendingId())
-      );
-      registeredStatus += studentRepository.registerCourseStatus(courseDetail.getStatus());
+      CourseStatus courseStatus = courseDetail.getStatus();
+      if (courseStatus == null) {
+        courseStatus = new CourseStatus();
+        courseDetail.setStatus(courseStatus);
+      }
+
+      // attendingId は コース情報から取得
+      courseStatus.setAttendingId(courseDetail.getCourse().getAttendingId());
+      // status が null ならstudentID に 1（仮申し込み）をデフォルト設定
+      courseStatus.setStatusId(Optional.ofNullable(courseStatus.getStatusId()).orElse(1));
+
+      registeredStatus += studentRepository.registerCourseStatus(courseStatus);
+
     }
 
     // ステータス情報の登録が行われなかった場合に例外をthrow -> 処理中断

@@ -57,10 +57,9 @@ erDiagram
     statuses {
         int status_id PK "ステータスID"
         varchar(20) status_name "ステータス名"
-        int display_order "表示順制御"
+        int display_order "表示順"
         boolean is_active "現在進行中か"
         boolean is_final "最終ステータスか"
-        boolean allow_new_registration "新規受講が可能か"
         timestamp created_at
         timestamp updated_at
     }

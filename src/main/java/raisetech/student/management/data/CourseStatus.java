@@ -21,11 +21,7 @@ public class CourseStatus {
   @Schema(description = "受講ID", example = "12")
   private Long attendingId;
 
-  @Schema(description = "受講・申し込み状況", example = "仮申し込み/本申し込み/受講中/受講終了")
-  private Status status;
-
-  public enum Status {
-    仮申し込み, 本申し込み, 受講中, 受講終了
-  }
+  @Schema(description = "ステータスID", example = "99（：キャンセル）※デフォルトは1（：仮申し込み）")
+  private Integer statusId;
 
 }

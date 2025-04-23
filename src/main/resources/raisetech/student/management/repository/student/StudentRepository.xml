@@ -35,10 +35,12 @@
 
   <!-- 受講生情報の登録 -->
   <insert id="registerStudent" useGeneratedKeys="true" keyProperty="studentId">
-    INSERT INTO students(full_name, name_pronunciation, nickname, email, area, birth_date, gender,
-    remark)
-    VALUES (#{fullName}, #{namePronunciation}, #{nickname}, #{email}, #{area}, #{birthDate},
-    #{gender}, #{remark})
+    INSERT INTO students(
+    full_name, name_pronunciation, nickname, email, area, birth_date, gender, remark
+    ) VALUES (
+    #{fullName}, #{namePronunciation}, #{nickname}, #{email}, #{area}, #{birthDate},
+    #{gender}, #{remark}
+    )
   </insert>
 
   <!-- コース情報の登録 -->
@@ -47,10 +49,15 @@
     VALUES (#{studentId}, #{courseId}, #{startDate}, #{endDate})
   </insert>
 
-  <!-- 受講ステータスの登録 -->
+  <!-- 受講ステータスの登録（ステータスIDは1（仮申し込み）がdefault） -->
   <insert id="registerCourseStatus" useGeneratedKeys="true" keyProperty="id">
-    INSERT INTO course_status(attending_id, status)
-    VALUES (#{attendingId}, #{status})
+    INSERT INTO course_status(attending_id, status_id)
+    VALUES (#{attendingId},
+    <choose>
+      <when test="statusId != null">#{statusId}</when>
+      <otherwise>1</otherwise>
+    </choose>
+    )
   </insert>
 
   <!-- 受講生情報の更新 -->
@@ -77,7 +84,7 @@
 
   <!-- 受講状況・申し込み状況の更新 -->
   <update id="updateCourseStatus">
-    UPDATE course_status SET status = #{status} WHERE id = #{id}
+    UPDATE course_status SET status_id = #{statusId} WHERE id = #{id}
   </update>
 
   <!-- 受講生の詳細検索 -->
@@ -133,9 +140,9 @@
   <select id="findStatus" resultType="raisetech.student.management.data.CourseStatus">
     SELECT DISTINCT * FROM course_status
     <where>
-      <if test='status != null and !status.isEmpty()'>
+      <if test='statusId != null and !statusId.isEmpty()'>
         status IN (
-        <foreach item="item" index="index" collection="status" separator=",">
+        <foreach item="item" index="index" collection="statusId" separator=",">
           #{item}
         </foreach>
         )
