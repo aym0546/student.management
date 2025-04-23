@@ -29,7 +29,6 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 import raisetech.student.management.data.CourseStatus;
-import raisetech.student.management.data.CourseStatus.Status;
 import raisetech.student.management.data.Student;
 import raisetech.student.management.data.StudentsCourse;
 import raisetech.student.management.domain.CourseDetail;
@@ -80,11 +79,11 @@ class StudentControllerTest {
 
     courseDetail1 = new CourseDetail(
         new StudentsCourse(998L, 999, 1, fixedDateTime, fixedDateTime.plusYears(1)),
-        new CourseStatus(1, 998L, Status.受講終了)
+        new CourseStatus(1, 998L, 5)
     );
     courseDetail2 = new CourseDetail(
         new StudentsCourse(999L, 999, 2, fixedDateTime, fixedDateTime.plusYears(1)),
-        new CourseStatus(2, 999L, Status.受講中)
+        new CourseStatus(2, 999L, 4)
     );
 
     studentDetail = new StudentDetail(student, List.of(courseDetail1, courseDetail2));
@@ -163,7 +162,7 @@ class StudentControllerTest {
         .andExpect(jsonPath("$.courseDetailList[0].course.endDate").value("2022-05-07T16:00:00"))
         .andExpect(jsonPath("$.courseDetailList[0].status.id").value("1"))
         .andExpect(jsonPath("$.courseDetailList[0].status.attendingId").value("998"))
-        .andExpect(jsonPath("$.courseDetailList[0].status.status").value("受講終了"))
+        .andExpect(jsonPath("$.courseDetailList[0].status.statusId").value("5"))
         .andExpect(jsonPath("$.courseDetailList[1].course.attendingId").value("999"))
         .andExpect(jsonPath("$.courseDetailList[1].course.studentId").value("999"))
         .andExpect(jsonPath("$.courseDetailList[1].course.courseId").value("2"))
@@ -171,7 +170,7 @@ class StudentControllerTest {
         .andExpect(jsonPath("$.courseDetailList[1].course.endDate").value("2022-05-07T16:00:00"))
         .andExpect(jsonPath("$.courseDetailList[1].status.id").value("2"))
         .andExpect(jsonPath("$.courseDetailList[1].status.attendingId").value("999"))
-        .andExpect(jsonPath("$.courseDetailList[1].status.status").value("受講中"));
+        .andExpect(jsonPath("$.courseDetailList[1].status.statusId").value("4"));
 
     verify(service, times(1)).registerStudent(any());
   }
@@ -205,7 +204,7 @@ class StudentControllerTest {
         .andExpect(jsonPath("$.courseDetailList[0].course.endDate").value("2022-05-07T16:00:00"))
         .andExpect(jsonPath("$.courseDetailList[0].status.id").value("1"))
         .andExpect(jsonPath("$.courseDetailList[0].status.attendingId").value("998"))
-        .andExpect(jsonPath("$.courseDetailList[0].status.status").value("受講終了"))
+        .andExpect(jsonPath("$.courseDetailList[0].status.statusId").value("5"))
         .andExpect(jsonPath("$.courseDetailList[1].course.attendingId").value("999"))
         .andExpect(jsonPath("$.courseDetailList[1].course.studentId").value("999"))
         .andExpect(jsonPath("$.courseDetailList[1].course.courseId").value("2"))
@@ -213,7 +212,7 @@ class StudentControllerTest {
         .andExpect(jsonPath("$.courseDetailList[1].course.endDate").value("2022-05-07T16:00:00"))
         .andExpect(jsonPath("$.courseDetailList[1].status.id").value("2"))
         .andExpect(jsonPath("$.courseDetailList[1].status.attendingId").value("999"))
-        .andExpect(jsonPath("$.courseDetailList[1].status.status").value("受講中"));
+        .andExpect(jsonPath("$.courseDetailList[1].status.statusId").value("4"));
 
     verify(service, times(1)).searchStudent(studentId);
   }

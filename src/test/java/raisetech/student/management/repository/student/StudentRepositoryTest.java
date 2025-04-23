@@ -10,7 +10,6 @@ import org.junit.jupiter.api.Test;
 import org.mybatis.spring.boot.test.autoconfigure.MybatisTest;
 import org.springframework.beans.factory.annotation.Autowired;
 import raisetech.student.management.data.CourseStatus;
-import raisetech.student.management.data.CourseStatus.Status;
 import raisetech.student.management.data.Student;
 import raisetech.student.management.data.StudentsCourse;
 import raisetech.student.management.dto.StudentSearchDTO;
@@ -49,13 +48,13 @@ class StudentRepositoryTest {
   private final List<StudentsCourse> studentsCourseList = List.of(course1, course2, course3,
       course4, course5, course6, course7);
 
-  CourseStatus status1 = new CourseStatus(1, 1L, Status.受講終了);
-  CourseStatus status2 = new CourseStatus(2, 2L, Status.受講終了);
-  CourseStatus status3 = new CourseStatus(3, 3L, Status.受講中);
-  CourseStatus status4 = new CourseStatus(4, 4L, Status.受講中);
-  CourseStatus status5 = new CourseStatus(5, 5L, Status.本申し込み);
-  CourseStatus status6 = new CourseStatus(6, 6L, Status.本申し込み);
-  CourseStatus status7 = new CourseStatus(7, 7L, Status.仮申し込み);
+  CourseStatus status1 = new CourseStatus(1, 1L, 5);
+  CourseStatus status2 = new CourseStatus(2, 2L, 5);
+  CourseStatus status3 = new CourseStatus(3, 3L, 4);
+  CourseStatus status4 = new CourseStatus(4, 4L, 4);
+  CourseStatus status5 = new CourseStatus(5, 5L, 3);
+  CourseStatus status6 = new CourseStatus(6, 6L, 3);
+  CourseStatus status7 = new CourseStatus(7, 7L, 1);
   private final List<CourseStatus> courseStatusList = List.of(status1, status2, status3, status4,
       status5, status6, status7);
 
@@ -121,7 +120,7 @@ class StudentRepositoryTest {
 
   @Test
   void 受講ステータスの登録が行えること() {
-    var status = new CourseStatus(null, 1L, Status.受講終了);
+    var status = new CourseStatus(null, 1L, 5);
     int actual = sut.registerCourseStatus(status);
     assertThat(actual).isEqualTo(1);
   }
@@ -164,13 +163,13 @@ class StudentRepositoryTest {
   @Test
   void 受講ステータスの更新が行えること() {
     int id = 1;
-    var status = new CourseStatus(id, 1L, Status.仮申し込み);
+    var status = new CourseStatus(id, 1L, 1);
 
     int updated = sut.updateCourseStatus(status);
     var actual = sut.searchCourseStatus(1L);
 
     assertEquals(1, updated);
-    assertEquals(status.getStatus(), actual.getStatus());
+    assertEquals(status.getStatusId(), actual.getStatusId());
   }
 
   @Test
@@ -204,12 +203,12 @@ class StudentRepositoryTest {
     // 検索条件
     var condition = new StudentSearchDTO(
         null, null, null, null, null, null, null,
-        null, null, null, null, List.of(Status.受講中));
+        null, null, null, null, List.of(4));
 
     var statuses = sut.findStatus(condition);
 
     assertThat(statuses).isNotEmpty();
-    assertThat(statuses.getFirst().getStatus()).isEqualTo(Status.受講中);
+    assertThat(statuses.getFirst().getStatusId()).isEqualTo(4);
   }
 
 }

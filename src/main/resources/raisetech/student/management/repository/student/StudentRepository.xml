@@ -140,9 +140,9 @@
   <select id="findStatus" resultType="raisetech.student.management.data.CourseStatus">
     SELECT DISTINCT * FROM course_status
     <where>
-      <if test='statusId != null and !statusId.isEmpty()'>
-        status IN (
-        <foreach item="item" index="index" collection="statusId" separator=",">
+      <if test='statusIds != null and !statusIds.isEmpty()'>
+        AND status_id IN (
+        <foreach item="item" index="index" collection="statusIds" separator=",">
           #{item}
         </foreach>
         )

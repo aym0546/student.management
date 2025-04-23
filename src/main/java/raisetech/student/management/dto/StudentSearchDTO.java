@@ -41,7 +41,7 @@ public record StudentSearchDTO(
     LocalDate endDate,
 
     @Schema(description = "検索する受講ステータスID（リスト）", example = "[5, 7]（ = 受講中とキャンセル）")
-    List<Integer> statusId
+    List<Integer> statusIds
 
 ) {
 

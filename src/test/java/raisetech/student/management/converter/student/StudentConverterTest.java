@@ -6,7 +6,6 @@ import java.util.List;
 import static org.assertj.core.api.Assertions.assertThat;
 import org.junit.jupiter.api.Test;
 import raisetech.student.management.data.CourseStatus;
-import raisetech.student.management.data.CourseStatus.Status;
 import raisetech.student.management.data.Student;
 import raisetech.student.management.data.StudentsCourse;
 import raisetech.student.management.domain.CourseDetail;
@@ -40,9 +39,9 @@ class StudentConverterTest {
         fixedDateTime.plusYears(1));
     List<StudentsCourse> studentsCourseList = List.of(course1, course2, course3);
 
-    var status1 = new CourseStatus(1, 111L, Status.受講中);
-    var status2 = new CourseStatus(2, 222L, Status.本申し込み);
-    var status3 = new CourseStatus(3, 333L, Status.仮申し込み);
+    var status1 = new CourseStatus(1, 111L, 4);
+    var status2 = new CourseStatus(2, 222L, 3);
+    var status3 = new CourseStatus(3, 333L, 1);
     List<CourseStatus> courseStatusList = List.of(status1, status2, status3);
 
     List<CourseDetail> courseDetailList = List.of(
@@ -87,9 +86,9 @@ class StudentConverterTest {
         fixedDateTime.plusYears(1));
     List<StudentsCourse> studentsCourseList = List.of(course1, course2, course3);
 
-    var status1 = new CourseStatus(1, attendingId1, Status.受講中);
-    var status2 = new CourseStatus(2, attendingId2, Status.本申し込み);
-    var status3 = new CourseStatus(3, attendingId3, Status.仮申し込み);
+    var status1 = new CourseStatus(1, attendingId1, 4);
+    var status2 = new CourseStatus(2, attendingId2, 3);
+    var status3 = new CourseStatus(3, attendingId3, 1);
     List<CourseStatus> courseStatusList = List.of(status1, status2, status3);
 
     // expectedを用意
