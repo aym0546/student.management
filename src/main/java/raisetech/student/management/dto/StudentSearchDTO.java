@@ -3,7 +3,6 @@ package raisetech.student.management.dto;
 import io.swagger.v3.oas.annotations.media.Schema;
 import java.time.LocalDate;
 import java.util.List;
-import raisetech.student.management.data.CourseStatus.Status;
 
 @Schema(description = "検索条件オブジェクト")
 public record StudentSearchDTO(
@@ -41,8 +40,8 @@ public record StudentSearchDTO(
     @Schema(description = "検索する受講終了日", example = "2000-01-01")
     LocalDate endDate,
 
-    @Schema(description = "検索する受講ステータス（リスト）", example = "[Status.受講終了, Status.受講中]")
-    List<Status> status
+    @Schema(description = "検索する受講ステータスID（リスト）", example = "[5, 7]（ = 受講中とキャンセル）")
+    List<Integer> statusIds
 
 ) {
 

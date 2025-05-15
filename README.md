@@ -85,7 +85,7 @@ erDiagram
 ## その他
 
 - Postman
-- Git/GitHub
+- Git / GitHub
 - Docker
 
 # 機能一覧

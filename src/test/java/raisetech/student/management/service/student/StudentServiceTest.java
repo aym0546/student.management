@@ -22,7 +22,6 @@ import static org.mockito.Mockito.when;
 import org.mockito.junit.jupiter.MockitoExtension;
 import raisetech.student.management.converter.student.StudentConverter;
 import raisetech.student.management.data.CourseStatus;
-import raisetech.student.management.data.CourseStatus.Status;
 import raisetech.student.management.data.Student;
 import raisetech.student.management.data.StudentsCourse;
 import raisetech.student.management.domain.CourseDetail;
@@ -80,8 +79,8 @@ class StudentServiceTest {
         LocalDateTime.now().plusYears(1));
     courseList = List.of(course1, course2);
 
-    status1 = new CourseStatus(1, attendingId1, Status.受講終了);
-    status2 = new CourseStatus(1, attendingId2, Status.受講中);
+    status1 = new CourseStatus(1, attendingId1, 5);
+    status2 = new CourseStatus(1, attendingId2, 4);
 
     courseDetail1 = new CourseDetail(course1, status1);
     courseDetail2 = new CourseDetail(course2, status2);
@@ -262,8 +261,8 @@ class StudentServiceTest {
         LocalDateTime.now().plusYears(1));
     var updateCourses = List.of(updateCourse1, updateCourse2);
 
-    var updateStatus1 = new CourseStatus(1, attendingId1, Status.受講終了);
-    var updateStatus2 = new CourseStatus(2, attendingId2, Status.受講終了);
+    var updateStatus1 = new CourseStatus(1, attendingId1, 5);
+    var updateStatus2 = new CourseStatus(2, attendingId2, 5);
     var updateStatuses = List.of(updateStatus1, updateStatus2);
 
     var updateCourseDetails = List.of(

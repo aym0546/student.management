@@ -16,15 +16,25 @@ INSERT INTO students_courses (student_id, course_id, start_date, end_date) VALUE
 (1, 6, '2025-06-01', '2025-12-01'), -- 山田 太郎が複数のコースを受講
 (2, 7, '2025-07-10', '2026-01-10'); -- 鈴木 花子が複数のコースを受講;
 
+-- statuses テーブルにデータを挿入
+INSERT INTO statuses (status_name, display_order) VALUES
+('仮申し込み', 1),
+('入金待ち', 2),
+('本申し込み', 3),
+('受講中', 4),
+('受講終了', 5),
+('受講中断', 6),
+('キャンセル', 99);
+
 -- course_status テーブルにデータを挿入
-INSERT INTO course_status (attending_id, status) VALUES
-(1, '受講終了'),
-(2, '受講終了'),
-(3, '受講中'),
-(4, '受講中'),
-(5, '本申し込み'),
-(6, '本申し込み'),
-(7, '仮申し込み');
+INSERT INTO course_status (attending_id, status_id) VALUES
+(1, 5),
+(2, 5),
+(3, 4),
+(4, 4),
+(5, 3),
+(6, 3),
+(7, 1);
 
 -- courses テーブルにデータを挿入　
 INSERT INTO courses (course_name, category, duration, is_closed) VALUES

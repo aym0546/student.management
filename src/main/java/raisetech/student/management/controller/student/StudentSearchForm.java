@@ -4,7 +4,6 @@ import io.swagger.v3.oas.annotations.media.Schema;
 import java.time.LocalDate;
 import java.util.List;
 import java.util.Optional;
-import raisetech.student.management.data.CourseStatus.Status;
 import raisetech.student.management.dto.StudentSearchDTO;
 
 @Schema(description = "検索フォーム")
@@ -43,8 +42,8 @@ public record StudentSearchForm(
     @Schema(description = "検索する受講終了日", example = "2000-01-01")
     LocalDate endDate,
 
-    @Schema(description = "検索する受講ステータス（リスト）", example = "[仮申し込み, 受講中]")
-    List<String> status
+    @Schema(description = "検索する受講ステータス（リスト）", example = "[5, 99]（ = 受講終了とキャンセル）")
+    List<Integer> statusIds
 
 ) {
 
@@ -63,16 +62,13 @@ public record StudentSearchForm(
         (minAge() != null) ? today.minusYears(minAge() + 1).minusDays(1)
             : null;
 
-    // statusについて、List<String>からList<Status>に変換
-    var statusDTOList = Optional.ofNullable(status())
-        .map(statusList -> statusList.stream().map(Status::valueOf).toList())
-        .orElse(List.of());  // statusがnullの時は空リストList.of()を返す
+    // statusIds が nullの場合、空リスト List.of() を返す
+    var statusIdList = Optional.ofNullable(statusIds).orElse(List.of());
 
     // リクエストデータをStudentSearchFormからStudentSearchDTOに詰め替え
     return new StudentSearchDTO(
         name(), startBirthDate, endBirthDate, area(), email(), gender(), remark(), courseId(),
-        category(),
-        startDate(), endDate(), statusDTOList);
+        category(), startDate(), endDate(), statusIdList);
 
   }
 
