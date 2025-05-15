@@ -1,44 +1,24 @@
 package raisetech.student.management;
 
-import java.util.List;
-import org.springframework.beans.factory.annotation.Autowired;
+import io.swagger.v3.oas.annotations.OpenAPIDefinition;
+import io.swagger.v3.oas.annotations.info.Contact;
+import io.swagger.v3.oas.annotations.info.Info;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
-import org.springframework.web.bind.annotation.DeleteMapping;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PatchMapping;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestParam;
-import org.springframework.web.bind.annotation.RestController;
 
+@OpenAPIDefinition(
+    info = @Info(
+        title = "StudentManagement",
+        version = "1.0",
+        description = "受講生の登録・検索・更新、コースマスタの登録・検索・更新を行うAPI",
+        contact = @Contact(name = "管理者", email = "admin@example.com")
+    )
+)
 @SpringBootApplication
-@RestController
 public class Application {
 
-//	インターフェースStudentRepositoryを呼び出し
-	@Autowired
-	private StudentRepository repository;
-
-	public static void main(String[] args) {
-		SpringApplication.run(Application.class, args);
-	}
-
-//	情報取得メソッド
-	@GetMapping("/student")
-	public List<Student> getStudentList(@RequestParam String name) {
-		return repository.searchByName(name);
-	}
-
-//	生徒情報の一覧表示
-	@GetMapping("/students")
-	public List<Student> listDisplay() {
-		return repository.displayStudent();
-	}
-
-//	コース情報の一覧表示
-	@GetMapping("/students_courses")
-	public List<StudentsCourse> getCousesList() {
-		return repository.displayCourse();
-	}
+  public static void main(String[] args) {
+    SpringApplication.run(Application.class, args);
+  }
 
 }
