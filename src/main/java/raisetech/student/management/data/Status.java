@@ -26,12 +26,6 @@ public class Status {
   @NotNull
   private int displayOrder;
 
-  @Schema(description = "進行中")
-  private boolean isActive;
-
-  @Schema(description = "最終ステータス")
-  private boolean isFinal;
-
   @Schema(description = "登録日時")
   private Timestamp createdAt;
 
