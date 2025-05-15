@@ -7,6 +7,8 @@ import java.sql.Timestamp;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.TimeZone;
+import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import static org.mockito.ArgumentMatchers.any;
@@ -61,6 +63,10 @@ class CourseControllerTest {
     }
   }
 
+  @BeforeAll
+  static void setupTimezone() {
+    TimeZone.setDefault(TimeZone.getTimeZone("UTC"));
+  }
 
   @BeforeEach
   void beforeEach() {
@@ -87,8 +93,8 @@ class CourseControllerTest {
         .andExpect(jsonPath("$[0].courseId").value(1))
         .andExpect(jsonPath("$[0].courseName").value("Javaコース"))
         .andExpect(jsonPath("$[0].category").value("開発系コース"))
-        .andExpect(jsonPath("$[0].createdAt").value("2021-05-07T07:00:00.000+00:00"))
-        .andExpect(jsonPath("$[0].updatedAt").value("2021-05-07T07:00:00.000+00:00"))
+        .andExpect(jsonPath("$[0].createdAt").value("2021-05-07T16:00:00.000+00:00"))
+        .andExpect(jsonPath("$[0].updatedAt").value("2021-05-07T16:00:00.000+00:00"))
     ;
 
     // serviceメソッドが呼ばれたことを確認
@@ -126,8 +132,8 @@ class CourseControllerTest {
         .andExpect(jsonPath("$.courseName").value("Javaコース"))
         .andExpect(jsonPath("$.duration").value("6"))
         .andExpect(jsonPath("$.closed").value("false"))
-        .andExpect(jsonPath("$.createdAt").value("2021-05-07T07:00:00.000+00:00"))
-        .andExpect(jsonPath("$.updatedAt").value("2021-05-07T07:00:00.000+00:00"))
+        .andExpect(jsonPath("$.createdAt").value("2021-05-07T16:00:00.000+00:00"))
+        .andExpect(jsonPath("$.updatedAt").value("2021-05-07T16:00:00.000+00:00"))
     ;
 
     verify(service, times(1)).registerCourseMaster(any());
