@@ -36,6 +36,7 @@ erDiagram
         int course_id FK "コースID"
         date start_date "受講開始日"
         date end_date "受講終了(予定)日"
+
     }
 
     courses {
@@ -164,6 +165,7 @@ erDiagram
 2. 受講状況（ステータス）の終了日について、コース情報から算出
 3. 受講ステータスもID管理・マスタテーブルを作成し、ステータスごとの属性・分類ができるよう設計（未実装）
 
+
 ## 工夫したところ（実装面）
 
 1. 検索において、年齢で検索条件指定を受け取り、内部で誕生日に変換して検索
@@ -194,6 +196,7 @@ erDiagram
     ```
 
 2. 受講情報検索はコースID指定だけでなく、カテゴリ指定でも行えるよう実装
+
 
     ```xml
     <select id="findCourse" resultType="raisetech.student.management.data.StudentsCourse">
