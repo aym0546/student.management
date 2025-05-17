@@ -253,6 +253,41 @@ CI/CDパイプラインにおいて、`main` ブランチへの push/pull_reques
 | CI/CD  | GitHub Actions + Shellスクリプト |
 | 接続方式   | SSH・パブリックIP経由               |
 
+#### EC2構成
+
+```mermaid
+graph TD
+    subgraph Internet
+        Client1["任意の外部アクセス（0.0.0.0/0）"]
+        GitHubActions["GitHub Actions"]
+    end
+
+    subgraph AWS VPC
+        ALB["ALB/リスナー: HTTP:80"]
+        EC2["EC2/StudentManagement.jar/8080"]
+        RDS["RDS/MySQL:3306"]
+    end
+
+    Client1 -->|TCP 80| ALB
+    ALB -->|転送: HTTP 80| EC2
+    GitHubActions -->|SSH: TCP 22（SGでIP制限）| EC2
+    EC2 -->|JDBC: 3306| RDS
+```
+
+> - **インスタンスタイプ**: t2.micro（検証用の最小構成）
+> - **OS**: Amazon Linux 2023
+> - **Webアプリのデプロイ先**: `/home/ec2-user/StudentManagement.jar`
+> - **systemdでサービス化**: `StudentManagement.service` により起動管理
+
+#### セキュリティグループ構成（開発用）
+
+| ポート番号 | プロトコル | 用途                   | 接続元            | 接続先                    |
+|-------|-------|----------------------|----------------|------------------------|
+| 22    | TCP   | EC2インスタンスへのSSH接続     | 管理者のPC（固定IPなど） | EC2インスタンス（Linuxサーバー）   |
+| 80    | HTTP  | Webアクセスの受け口（ALB）     | インターネット        | ALB                    |
+| 8080  | HTTP  | アプリケーションのWeb API用ポート | ALB            | EC2インスタンス上のSpring Boot |
+| 3306  | JDBC  | アプリケーション→DB接続（MySQL） | EC2インスタンス      | RDS（MySQL）             |
+
 #### アクセス情報（例）
 
 | 種別       | URL                                                                                |
