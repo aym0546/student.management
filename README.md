@@ -1,4 +1,4 @@
-# アプリの概要
+# 📚 Student Management App
 
 ![CodeQL](https://github.com/aym0546/student.management/actions/workflows/codeql.yml/badge.svg)
 
@@ -32,6 +32,93 @@
 
 - スクール運営者、個人講師、社内研修の教育担当者
 - 講座の受講管理・申込管理・進捗把握を効率化したい方
+
+## アプリケーションの実行方法（Docker使用）
+
+以下の手順でアプリケーションをローカル環境に構築・起動できます。
+
+### 前提条件
+
+- [Docker](https://www.docker.com/products/docker-desktop)
+  および [Docker Compose](https://docs.docker.com/compose/) がインストール済み
+- Java 21（ホストには不要、Docker内で動作）
+- Git / ターミナル環境があること
+
+### ディレクトリ構成（抜粋）
+
+```
+.
+├── build.gradle
+├── docker/
+│   ├── Dockerfile
+│   ├── docker-compose.yml
+│   ├── app.env
+│   ├── start.sh
+│   └── mysql/
+│       └── init.sql
+└── src/
+```
+
+### 環境変数の設定
+
+`docker/app.env` に環境変数を定義しています：
+
+```env
+SPRING_PROFILES_ACTIVE=dev
+MYSQL_USER=root
+MYSQL_PASSWORD=rootroot
+MYSQL_DATABASE=StudentManagement
+```
+
+### 初期化SQL
+
+MySQL 初期化用のSQLファイルは以下に配置されています：
+
+```
+docker/mysql/init.sql
+```
+
+初回起動時に自動的に以下が実行されます：
+
+- テーブル作成
+- マスタデータ（status, course）挿入
+  ※ MySQL のデータがすでに存在する場合は再実行されません。
+
+### 起動手順
+
+1. リポジトリをクローン
+    ```bash
+    git clone https://github.com/aym0546/student.management.git
+    cd student.management
+    ```
+
+2. 起動スクリプトの実行（推奨）
+    ```bash
+    bash docker/start.sh
+    ```
+   > start.sh 内部で以下を実行しています：
+   > - `./gradlew build`（jarファイル生成）
+   > - `docker-compose up --build`
+
+### アクセス方法
+
+アプリケーションは以下のURLで利用可能です：
+
+[http://localhost:8080](http://localhost:8080)
+
+### 補助スクリプト（任意）
+
+#### アプリケーションの停止
+
+```bash
+bash docker/stop.sh
+```
+
+#### ログ確認
+
+```bash
+bash docker/log.sh
+```
 
 # ER図
 
@@ -113,7 +200,7 @@ erDiagram
 
 - AWS
 - Docker
-- MySQL（3.9.4）
+- MySQL（9.1.0）
 - GitHub Actions (CI/CD)
 
 ## テスト
@@ -263,19 +350,25 @@ CI/CDパイプラインにおいて、`main` ブランチへの push/pull_reques
 
 ### 4. DevOps・インフラ構成
 
+#### CI/CD構成（GitHub Actions）
+
 本アプリケーションは、**AWS環境**にデプロイされており、**GitHub Actionsを用いたCI/CDパイプライン**
 を構築しています。これにより、ソースコードの変更が自動的にビルド・テスト・デプロイまで反映され、開発と運用を効率化しています。
 
-#### CI/CD構成（GitHub Actions）
-
 - **CI（継続的インテグレーション）**
-    - プルリクエスト作成時にJUnitによる自動テストを実行
-    - テスト結果に基づいてマージ可否を判断
+    - **目的**：ソースコードの品質を担保し、問題のある変更を未然に防ぐ
+    - **トリガー**：プルリクエスト作成時
+    - **実行内容**：
+        - `JUnit` による自動テストを実行
+        - テスト結果に応じてマージの可否を判断
 
 - **CD（継続的デプロイ）**
-    - `main`ブランチへのマージで以下の処理を自動実行：
+    - **目的**：安全かつ迅速に本番環境へアプリケーションを反映
+    - **トリガー**：`main`ブランチへのマージ
+    - **実行内容**：
         1. Javaアプリケーションのビルド
-        2. EC2へのSSH接続によるアプリケーション再起動（デプロイスクリプト実行）
+        2. SSHでEC2サーバーに接続
+        3. デプロイスクリプトを実行し、アプリケーションを再起動
 
 #### インフラ環境（AWS）
 
@@ -332,3 +425,9 @@ graph TD
 > - EC2はコスト削減のため通常は停止状態にしており、常時アクセス可能な状態ではありません。
 > - アクセス時は必要に応じてインスタンスを起動する必要があります。
 > - EC2インスタンスのパブリックIPアドレスは、再起動ごとに変更されます。
+
+## 今後の展望
+
+- ステータスマスタに `遷移ルール` を追加し、状態遷移の制御を実装予定
+- Elasticsearch連携による全文検索
+- フロントエンドのSPA化（React予定）

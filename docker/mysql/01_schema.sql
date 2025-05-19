@@ -1,4 +1,5 @@
-CREATE TABLE statuses (
+-- テーブル定義
+CREATE TABLE IF NOT EXISTS statuses (
     status_id INT AUTO_INCREMENT PRIMARY KEY,
     status_name VARCHAR(20) NOT NULL UNIQUE,
     display_order INT NOT NULL,
@@ -6,7 +7,7 @@ CREATE TABLE statuses (
     updated_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
 );
 
-CREATE TABLE students (
+CREATE TABLE IF NOT EXISTS students (
     student_id INT AUTO_INCREMENT PRIMARY KEY,
     full_name VARCHAR(50) NOT NULL,
     name_pronunciation VARCHAR(50) NOT NULL,
@@ -20,7 +21,7 @@ CREATE TABLE students (
     CHECK (gender IN ('Male', 'Female', 'Other'))
 );
 
-CREATE TABLE courses (
+CREATE TABLE IF NOT EXISTS courses (
     course_id INT AUTO_INCREMENT PRIMARY KEY,
     course_name VARCHAR(50) NOT NULL UNIQUE,
     category VARCHAR(20) NOT NULL,
@@ -30,7 +31,7 @@ CREATE TABLE courses (
     updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
 );
 
-CREATE TABLE students_courses (
+CREATE TABLE IF NOT EXISTS students_courses (
     attending_id INT AUTO_INCREMENT PRIMARY KEY,
     student_id INT NOT NULL,
     course_id INT NOT NULL,
@@ -40,7 +41,7 @@ CREATE TABLE students_courses (
         REFERENCES students(student_id) ON DELETE CASCADE
 );
 
-CREATE TABLE course_status (
+CREATE TABLE IF NOT EXISTS course_status (
     id INT AUTO_INCREMENT PRIMARY KEY,
     attending_id INT NOT NULL,
     status_id INT NOT NULL,
