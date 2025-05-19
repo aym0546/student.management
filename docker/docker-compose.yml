@@ -8,7 +8,7 @@ services:
       - MYSQL_ROOT_PASSWORD=rootroot
     volumes:
       - db-data:/var/lib/mysql # データの永続化
-      - ./docker/mysql:/docker-entrypoint-initdb.d # 初回起動時SQL読み込み
+      - ./mysql:/docker-entrypoint-initdb.d # 初回起動時SQL読み込み
     healthcheck:
       test: [ "CMD", "mysqladmin", "ping", "-h", "localhost", "-u", "root", "-prootroot" ]
       interval: 10s
@@ -23,7 +23,7 @@ services:
 
   app:
     build:
-      context: .
+      context: ../
       dockerfile: docker/Dockerfile
     environment:
       - SPRING_PROFILES_ACTIVE=dev
