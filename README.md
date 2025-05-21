@@ -260,6 +260,8 @@ graph TD
 > - アクセス時は必要に応じてインスタンスを起動する必要があります。
 > - EC2インスタンスのパブリックIPアドレスは、再起動ごとに変更されます。
 
+---
+
 ## 工夫したところ（設計面）
 
 1. コースをID管理・マスタテーブルを作成し、今後のコース増減（講師違い・期間違いなど）に柔軟に対応できるよう設計
@@ -271,47 +273,47 @@ graph TD
 
 ### 1. 検索において、年齢で検索条件指定を受け取り、内部で誕生日に変換して検索
 
-    ```java
-    public StudentSearchDTO toDTO() {
-    
-    	// 年齢指定をbirthDateに置き換え
-    	var today = LocalDate.now();
-    	var startBirthDate =
-    		(maxAge() != null) ? today.minusYears(maxAge() + 1).plusDays(1)
-    			: null;
-    	var endBirthDate =
-    		(minAge() != null) ? today.minusYears(minAge() + 1).minusDays(1)
-    			: null;
-    
-    	// statusをList<String>からList<Status>に変換
-    	var statusDTOList = Optional.ofNullable(status())
-    				.map(statusList -> statusList.stream().map(Status::valueOf).toList())
-    				.orElse(List.of());  // statusがnullの時は空リストList.of()を返す
-    
-    	// リクエストデータをStudentSearchFormからStudentSearchDTOに詰め替え
-    	return new StudentSearchDTO(
-    		name(), startBirthDate, endBirthDate, area(), email(), gender(), remark(), courseId(),
-    		category(), startDate(), endDate(), statusDTOList);
-    
-    }
-    ```
+```java
+public StudentSearchDTO toDTO() {
+
+    // 年齢指定をbirthDateに置き換え
+    var today = LocalDate.now();
+    var startBirthDate =
+        (maxAge() != null) ? today.minusYears(maxAge() + 1).plusDays(1)
+            : null;
+    var endBirthDate =
+        (minAge() != null) ? today.minusYears(minAge() + 1).minusDays(1)
+            : null;
+
+    // statusをList<String>からList<Status>に変換
+    var statusDTOList = Optional.ofNullable(status())
+                .map(statusList -> statusList.stream().map(Status::valueOf).toList())
+                .orElse(List.of());  // statusがnullの時は空リストList.of()を返す
+
+    // リクエストデータをStudentSearchFormからStudentSearchDTOに詰め替え
+    return new StudentSearchDTO(
+        name(), startBirthDate, endBirthDate, area(), email(), gender(), remark(), courseId(),
+        category(), startDate(), endDate(), statusDTOList);
+
+}
+```
 
 ### 2. 受講情報検索はコースID指定だけでなく、カテゴリ指定でも行えるよう実装
 
-    ```xml
-    <select id="findCourse" resultType="raisetech.student.management.data.StudentsCourse">
-    	SELECT DISTINCT sc.* FROM students_courses sc
-    	JOIN courses c ON sc.course_id = c.course_id
-    	<where>
-    		<if test='courseId != null'>
-    			AND sc.course_id = #{courseId}
-    		</if>
-    		<if test='category != null and !category.isBlank()'>
-    			AND c.category = #{category}
-    		</if>
-    	</where>
-    </select>
-    ```
+```xml
+<select id="findCourse" resultType="raisetech.student.management.data.StudentsCourse">
+    SELECT DISTINCT sc.* FROM students_courses sc
+    JOIN courses c ON sc.course_id = c.course_id
+    <where>
+        <if test='courseId != null'>
+            AND sc.course_id = #{courseId}
+        </if>
+        <if test='category != null and !category.isBlank()'>
+            AND c.category = #{category}
+        </if>
+    </where>
+</select>
+```
 
 ### 3. テスト（JUnit）
 
