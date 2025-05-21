@@ -1,0 +1,14 @@
+# Gradle build output
+/build
+/.gradle
+
+# IntelliJ IDEA等のIDE設定
+.idea
+*.iml
+
+# OSやエディタの不要ファイル
+.DS_Store
+
+# Git
+.git
+.gitignore

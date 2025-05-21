@@ -32,7 +32,6 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 import raisetech.student.management.data.Course;
 import raisetech.student.management.data.Course.CourseCategory;
-import raisetech.student.management.data.Course.CourseName;
 import raisetech.student.management.exception.ProcessFailedException;
 import raisetech.student.management.service.course.CourseService;
 
@@ -50,7 +49,7 @@ class CourseControllerTest {
   private ObjectMapper objectMapper;
 
   private Course course;
-  private final int courseId = 999;
+  private final int courseId = 1000;
   private Map<String, Boolean> requestBody;
 
   // テスト用のモックBeanを定義
@@ -72,7 +71,7 @@ class CourseControllerTest {
   void beforeEach() {
 
     course = new Course(
-        1, CourseName.Javaコース, CourseCategory.開発系コース, 6, false,
+        1, "Javaコース（Test）", CourseCategory.開発系コース, 6, false,
         Timestamp.valueOf("2021-05-07 16:00:00"), Timestamp.valueOf("2021-05-07 16:00:00"));
 
     Mockito.reset(service); // モックをリセット
@@ -91,7 +90,7 @@ class CourseControllerTest {
         .andExpect(
             content().contentTypeCompatibleWith(MediaType.APPLICATION_JSON))
         .andExpect(jsonPath("$[0].courseId").value(1))
-        .andExpect(jsonPath("$[0].courseName").value("Javaコース"))
+        .andExpect(jsonPath("$[0].courseName").value("Javaコース（Test）"))
         .andExpect(jsonPath("$[0].category").value("開発系コース"))
         .andExpect(jsonPath("$[0].createdAt").value("2021-05-07T16:00:00.000+00:00"))
         .andExpect(jsonPath("$[0].updatedAt").value("2021-05-07T16:00:00.000+00:00"))
@@ -129,7 +128,7 @@ class CourseControllerTest {
             .content(request))
         .andExpect(status().isCreated())
         .andExpect(jsonPath("$.courseId").value("1"))
-        .andExpect(jsonPath("$.courseName").value("Javaコース"))
+        .andExpect(jsonPath("$.courseName").value("Javaコース（Test）"))
         .andExpect(jsonPath("$.duration").value("6"))
         .andExpect(jsonPath("$.closed").value("false"))
         .andExpect(jsonPath("$.createdAt").value("2021-05-07T16:00:00.000+00:00"))
@@ -152,7 +151,7 @@ class CourseControllerTest {
             .contentType(MediaType.APPLICATION_JSON)
             .content(request))
         .andExpect(status().isOk())
-        .andExpect(content().string("コース名：【 Javaコース 】の更新処理が成功しました。"));
+        .andExpect(content().string("コース名：【 Javaコース（Test） 】の更新処理が成功しました。"));
 
     verify(service, times(1)).updateCourseMaster(eq(1), any());
   }

@@ -18,7 +18,6 @@ import static org.mockito.Mockito.when;
 import org.mockito.junit.jupiter.MockitoExtension;
 import raisetech.student.management.data.Course;
 import raisetech.student.management.data.Course.CourseCategory;
-import raisetech.student.management.data.Course.CourseName;
 import raisetech.student.management.exception.NoDataException;
 import raisetech.student.management.exception.ProcessFailedException;
 import raisetech.student.management.repository.course.CourseRepository;
@@ -41,9 +40,9 @@ class CourseServiceTest {
 
     courseId = 1;
     input = new Course(
-        courseId, CourseName.Javaコース, CourseCategory.開発系コース, 6, false, null, null);
+        courseId, "Javaコース", CourseCategory.開発系コース, 6, false, null, null);
     exist = new Course(
-        courseId, CourseName.AWSコース, CourseCategory.開発系コース, 3, false, null, null);
+        courseId, "AWSコース", CourseCategory.開発系コース, 3, false, null, null);
   }
 
   @Test
@@ -57,7 +56,7 @@ class CourseServiceTest {
 
   @Test
   void コースマスタの新規作成_リポジトリを適切に呼び出し引数を渡せていること() {
-    var master = new Course(CourseName.Javaコース, CourseCategory.開発系コース, 999);
+    var master = new Course("Javaコース", CourseCategory.開発系コース, 999);
     sut.registerCourseMaster(master);
     verify(repository, times(1)).registerCourseMaster(master);
   }

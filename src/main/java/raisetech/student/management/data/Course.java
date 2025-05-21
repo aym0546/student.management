@@ -21,7 +21,7 @@ public class Course {
 
   @Schema(description = "コース名", example = "Javaコース")
   @NotNull
-  private CourseName courseName;
+  private String courseName;
 
   @Schema(description = "コースカテゴリ", example = "開発系コース")
   @NotNull
@@ -40,15 +40,12 @@ public class Course {
   @Schema(description = "更新日時")
   private Timestamp updatedAt;
 
-  public enum CourseName {
-    Javaコース, AWSコース, WordPressコース, デザインコース, webマーケティングコース, 映像制作コース, フロントエンドコース
-  }
 
   public enum CourseCategory {
     開発系コース, 制作系コース
   }
 
-  public Course(CourseName courseName, CourseCategory category, int duration) {
+  public Course(String courseName, CourseCategory category, int duration) {
     this.courseName = courseName;
     this.category = category;
     this.duration = duration;
@@ -60,7 +57,7 @@ public class Course {
       return false;
     }
     return duration == course.duration && Objects.equals(courseId, course.courseId)
-        && courseName == course.courseName && category == course.category &&
+        && Objects.equals(courseName, course.courseName) && category == course.category &&
         Objects.equals(isClosed, course.isClosed);
   }
 }

@@ -6,6 +6,19 @@
 
 受講生のプロフィール、受講生が所属しているコースとその受講期間、申し込み状況などを管理できます。
 
+## 目次
+
+- [開発の背景と目的](#開発の背景と目的)
+- [機能一覧](#機能一覧)
+- [アプリケーションの実行方法（Docker）](#アプリケーションの実行方法docker)
+- [使用技術](#使用技術)
+- [CI/CD構成（GitHub Actions）](#cicd構成github-actions)
+- [インフラ構成（AWS）](#インフラ構成aws)
+- [工夫したところ（設計面）](#工夫したところ設計面)
+- [工夫したところ（実装面）](#工夫したところ実装面)
+- [今後の展望](#今後の展望)
+- [付録：画面イメージと利用例・データベース](#付録画面イメージと利用例)
+
 ## 開発の背景と目的
 
 本アプリケーションは、
@@ -13,114 +26,34 @@
 
 当初は**スクール課題の一環**として開発を始めましたが、より実用性の高いものにするため使用現場を想定し、以下のような工夫や拡張を自ら行いました：
 
-- **コース情報・受講ステータスマスタを導入し、IDによる一元管理**を実現
-- **履歴管理可能な受講状況テーブル**を設計し、状態遷移を記録できるように
-- **複数条件での直感的な検索機能**を実装し、実務でも活用しやすい構成に
+- コース、ステータスはIDで一元管理
+- 受講状況は履歴型テーブルで記録
+- 複数条件検索に対応
 
-### 解決したかった課題
+## 機能一覧
 
-個人経営のスクールや小規模な講座運営では、以下のような悩みが生じがちです：
+|    | 機能                        |
+|----|---------------------------|
+| 1  | 受講生プロフィールの登録              |
+| 2  | 受講生プロフィールの更新              |
+| 3  | 受講生プロフィールの削除（論理削除）        |
+| 4  | 受講生プロフィールの検索（ID指定）        |
+| 5  | 受講生プロフィールの詳細検索（条件指定）      |
+| 6  | 受講情報の登録                   |
+| 7  | 受講情報の更新                   |
+| 8  | 受講情報の検索（ID指定）             |
+| 9  | 受講情報の検索（条件指定）             |
+| 10 | 受講状況（ステータス）の登録            |
+| 11 | 受講状況（ステータス）の更新            |
+| 12 | 受講状況（ステータス）のクローズ          |
+| 13 | 受講状況（ステータス）の検索            |
+| 14 | 受講生プロフィール・コース情報・ステータス複合検索 |
+| 15 | コースマスタの登録                 |
+| 16 | コースマスタの更新                 |
+| 17 | コースマスタのクローズ               |
+| 18 | コースマスタの全件検索               |
 
-- Excelや紙ベースでの管理に限界がある
-- 受講生の申込状況や進捗を把握しづらい
-- コースごとの傾向やニーズの分析が難しい
-
-このような課題を想定し、本アプリでは**受講生・コース・受講状況の一元管理と柔軟な検索機能**
-を提供することで、業務効率と視認性の向上を図ることを目的としています。
-
-### 想定する利用者と運用シーン
-
-- スクール運営者、個人講師、社内研修の教育担当者
-- 講座の受講管理・申込管理・進捗把握を効率化したい方
-
-## アプリケーションの実行方法（Docker使用）
-
-以下の手順でアプリケーションをローカル環境に構築・起動できます。
-
-### 前提条件
-
-- [Docker](https://www.docker.com/products/docker-desktop)
-  および [Docker Compose](https://docs.docker.com/compose/) がインストール済み
-- Java 21（ホストには不要、Docker内で動作）
-- Git / ターミナル環境があること
-
-### ディレクトリ構成（抜粋）
-
-```
-.
-├── build.gradle
-├── docker/
-│   ├── Dockerfile
-│   ├── docker-compose.yml
-│   ├── app.env
-│   ├── start.sh
-│   └── mysql/
-│       └── init.sql
-└── src/
-```
-
-### 環境変数の設定
-
-`docker/app.env` に環境変数を定義しています：
-
-```env
-SPRING_PROFILES_ACTIVE=dev
-MYSQL_USER=root
-MYSQL_PASSWORD=rootroot
-MYSQL_DATABASE=StudentManagement
-```
-
-### 初期化SQL
-
-MySQL 初期化用のSQLファイルは以下に配置されています：
-
-```
-docker/mysql/init.sql
-```
-
-初回起動時に自動的に以下が実行されます：
-
-- テーブル作成
-- マスタデータ（status, course）挿入
-  ※ MySQL のデータがすでに存在する場合は再実行されません。
-
-### 起動手順
-
-1. リポジトリをクローン
-    ```bash
-    git clone https://github.com/aym0546/student.management.git
-    cd student.management
-    ```
-
-2. 起動スクリプトの実行（推奨）
-    ```bash
-    bash docker/start.sh
-    ```
-   > start.sh 内部で以下を実行しています：
-   > - `./gradlew build`（jarファイル生成）
-   > - `docker-compose up --build`
-
-### アクセス方法
-
-アプリケーションは以下のURLで利用可能です：
-
-[http://localhost:8080](http://localhost:8080)
-
-### 補助スクリプト（任意）
-
-#### アプリケーションの停止
-
-```bash
-bash docker/stop.sh
-```
-
-#### ログ確認
-
-```bash
-bash docker/log.sh
-```
-
-# ER図
+## ER図
 
 ```mermaid
 ---
@@ -181,112 +114,158 @@ erDiagram
     }
 ```
 
-# データベース
+## アプリケーションの実行方法（Docker）
 
-![image](https://github.com/user-attachments/assets/cbf6fd0e-a676-4b0e-baf3-bba38a00f459)
+以下の手順でアプリケーションをローカル環境に構築・起動できます。
 
-# インフラ構成図
+### 前提条件
+
+- [Docker](https://www.docker.com/products/docker-desktop)
+  / [Docker Compose](https://docs.docker.com/compose/)
+- Java 21（ホストには不要、Docker内で動作）
+- Git / Bash
+
+1. リポジトリをクローン
+    ```bash
+    git clone https://github.com/aym0546/student.management.git
+    cd student.management
+    ```
+
+2. 起動スクリプトの実行（推奨）
+    ```bash
+    bash docker/start.sh
+    ```
+   > start.sh 内部で以下を実行しています：
+   > - `./gradlew build`（jarファイル生成）
+   > - `docker-compose up --build`
+
+### アクセス方法
+
+アプリケーションは以下のURLで利用可能です：
+
+[http://localhost:8080](http://localhost:8080)
+
+### 補助スクリプト
+
+#### アプリケーションの停止
+
+```bash
+bash docker/stop.sh
+```
+
+#### ログ確認
+
+```bash
+bash docker/log.sh
+```
+
+## 設定プロファイル
+
+| プロファイル                         | 説明                    |
+|--------------------------------|-----------------------|
+| `application.properties`       | 共通設定                  |
+| `application-dev.properties`   | Docker用: DBホスト = `db` |
+| `application-local.properties` | ローカルMySQL用            |
+| `application-prod.properties`  | 本番AWS(RDS) 用          |
+
+使用例:
+
+```
+spring.profiles.active=dev
+```
+
+## 使用技術
+
+* **Java 21.0.5 / Spring Boot 3.4.1**
+* MySQL (Docker / RDS)
+* MyBatis / JUnit5（5.11.4）
+* GitHub Actions (CI/CD)
+* Docker / AWS (EC2 + RDS)
+
+## CI/CD構成（GitHub Actions）
+
+本アプリケーションは、**AWS環境**にデプロイされており、**GitHub Actionsを用いたCI/CDパイプライン**
+を構築しています。これにより、ソースコードの変更が自動的にビルド・テスト・デプロイまで反映され、開発と運用を効率化しています。
+
+- **CI（継続的インテグレーション）**
+    - **目的**：ソースコードの品質を担保し、問題のある変更を未然に防ぐ
+    - **トリガー**：プルリクエスト作成時
+    - **実行内容**：
+        - `JUnit` による自動テストを実行
+        - テスト結果に応じてマージの可否を判断
+
+- **CD（継続的デプロイ）**
+    - **目的**：安全かつ迅速に本番環境へアプリケーションを反映
+    - **トリガー**：`main`ブランチへのマージ
+    - **実行内容**：
+        1. Javaアプリケーションのビルド
+        2. SSHでEC2サーバーに接続
+        3. デプロイスクリプトを実行し、アプリケーションを再起動
+
+## インフラ構成（AWS）
 
 ![infrastructure drawio](https://github.com/user-attachments/assets/72905c10-760e-4149-aa36-13f7c79f2493)
 
-# 使用技術
+| 項目     | 技術/サービス                     |
+|--------|-----------------------------|
+| サーバー   | Amazon EC2（Docker 実行）       |
+| データベース | Amazon RDS（MySQL）           |
+| CI/CD  | GitHub Actions + Shellスクリプト |
+| 接続方式   | SSH・パブリックIP経由               |
 
-## バックエンド
+#### VPC構成
 
-- Java（21.0.5）
-- SpringBoot（3.4.1）
+```mermaid
+graph TD
+    subgraph Internet
+        Client1["任意の外部アクセス（0.0.0.0/0）"]
+        GitHubActions["GitHub Actions"]
+    end
 
-## インフラ・DB
+    subgraph AWS VPC
+        ALB["ALB/リスナー: HTTP:80"]
+        EC2["EC2/StudentManagement.jar/8080"]
+        RDS["RDS/MySQL:3306"]
+    end
 
-- AWS
-- Docker
-- MySQL（9.1.0）
-- GitHub Actions (CI/CD)
+    Client1 -->|TCP 80| ALB
+    ALB -->|転送: HTTP 80| EC2
+    GitHubActions -->|SSH: TCP 22（SGでIP制限）| EC2
+    EC2 -->|JDBC: 3306| RDS
+```
 
-## テスト
+> - **インスタンスタイプ**: t2.micro（検証用の最小構成）
+> - **OS**: Amazon Linux 2023
+> - **Webアプリのデプロイ先**: `/home/ec2-user/StudentManagement.jar`
+> - **systemdでサービス化**: `StudentManagement.service` により起動管理
 
-- JUnit（5.11.4）
+#### セキュリティグループ構成（開発用）
 
-## ツール
+| ポート番号 | プロトコル | 用途                   | 接続元            | 接続先                    |
+|-------|-------|----------------------|----------------|------------------------|
+| 22    | TCP   | EC2インスタンスへのSSH接続     | 管理者のPC（固定IPなど） | EC2インスタンス（Linuxサーバー）   |
+| 80    | HTTP  | Webアクセスの受け口（ALB）     | インターネット        | ALB                    |
+| 8080  | HTTP  | アプリケーションのWeb API用ポート | ALB            | EC2インスタンス上のSpring Boot |
+| 3306  | JDBC  | アプリケーション→DB接続（MySQL） | EC2インスタンス      | RDS（MySQL）             |
 
-- Postman
-- Git / GitHub
+#### アクセス情報（例）
 
-# 機能一覧
+| 種別       | URL                                                                                |
+|----------|------------------------------------------------------------------------------------|
+| パブリックIP  | `http://57.180.9.102`                                                              |
+| ALB経由URL | `http://StudentManagementALB-1511570873.ap-northeast-1.elb.amazonaws.com/students` |
 
-|    | 機能                        |
-|----|---------------------------|
-| 1  | 受講生プロフィールの登録              |
-| 2  | 受講生プロフィールの更新              |
-| 3  | 受講生プロフィールの削除（論理削除）        |
-| 4  | 受講生プロフィールの検索（ID指定）        |
-| 5  | 受講生プロフィールの詳細検索（条件指定）      |
-| 6  | 受講情報の登録                   |
-| 7  | 受講情報の更新                   |
-| 8  | 受講情報の検索（ID指定）             |
-| 9  | 受講情報の検索（条件指定）             |
-| 10 | 受講状況（ステータス）の登録            |
-| 11 | 受講状況（ステータス）の更新            |
-| 12 | 受講状況（ステータス）のクローズ          |
-| 13 | 受講状況（ステータス）の検索            |
-| 14 | 受講生プロフィール・コース情報・ステータス複合検索 |
-| 15 | コースマスタの登録                 |
-| 16 | コースマスタの更新                 |
-| 17 | コースマスタのクローズ               |
-| 18 | コースマスタの全件検索               |
-
-# 何ができるのか
-
-## 受講生情報管理
-
-### 受講生プロフィール・受講情報・受講ステータスの登録
-
-<img width="793" alt="image" src="https://github.com/user-attachments/assets/63db5a25-b356-47e7-8df5-ec05f7a965a0" />
-<img width="793" alt="image" src="https://github.com/user-attachments/assets/771ec2ba-5d1d-4cde-89e1-02f64ca6424c" />
-
-### 受講生プロフィール・受講情報・受講ステータスの更新
-
-<img width="793" alt="image" src="https://github.com/user-attachments/assets/16be7ad6-b18e-49ff-9630-42899fd7f57e" />
-
-### 受講生プロフィールの削除（論理削除）
-
-<img width="793" alt="image" src="https://github.com/user-attachments/assets/dd84bbb8-68d0-482a-b172-c2bd0aa84837" />
-
-### 受講生プロフィールの検索（ID指定）
-
-<img width="793" alt="image" src="https://github.com/user-attachments/assets/f573f6aa-ad71-4b5d-b4d0-2f1cd780b8ba" />
-
-### 受講生プロフィール・受講情報・受講ステータス詳細検索（複合条件指定）
-
-<img width="871" alt="image" src="https://github.com/user-attachments/assets/40b3d172-797e-4a14-b7e5-5894747c460d" />
-
-### クエリパラメータ指定なしの詳細検索（全件検索）
-
-<img width="871" alt="image" src="https://github.com/user-attachments/assets/d601c3e3-41b0-473f-8c87-ca2ea4b6114a" />
-
-## コース情報管理
-
-### コースマスタの全件取得
-
-  <img width="869" alt="image" src="https://github.com/user-attachments/assets/5aaf4b1b-55b6-48ef-b73b-5d9d22c862b3" />
-
-### コースマスタの登録
-
-  <img width="869" alt="image" src="https://github.com/user-attachments/assets/65f5eda0-b884-49f3-a2ef-c59ec4aa4528" />
-
-### コースマスタの更新
-
-  <img width="791" alt="image" src="https://github.com/user-attachments/assets/eaaf2edc-df7a-48cd-98dc-2005308bdf23" />
-
-### コースマスタのクローズ
-
-  <img width="791" alt="image" src="https://github.com/user-attachments/assets/61a20dfa-5263-4698-a4fa-dcec508676bc" />
+> **※ 注意**
+> - EC2はコスト削減のため通常は停止状態にしており、常時アクセス可能な状態ではありません。
+> - アクセス時は必要に応じてインスタンスを起動する必要があります。
+> - EC2インスタンスのパブリックIPアドレスは、再起動ごとに変更されます。
 
 ## 工夫したところ（設計面）
 
 1. コースをID管理・マスタテーブルを作成し、今後のコース増減（講師違い・期間違いなど）に柔軟に対応できるよう設計
 2. 受講状況（ステータス）の終了日について、コース情報から算出
-3. 受講ステータスもID管理・マスタテーブルを作成し、ステータスごとの属性・分類ができるよう設計（未実装）
+3. 受講ステータスもID管理・マスタテーブルを作成し、ステータスごとの属性・分類ができるよう設計
+4. 環境ごとに設定ファイルを分け（共通/dev/local/prod）、Docker・AWS・ローカルの起動環境を切り替えやすく運用しやすい構成に
 
 ## 工夫したところ（実装面）
 
@@ -348,86 +327,63 @@ CI/CDパイプラインにおいて、`main` ブランチへの push/pull_reques
    <img width="1203" alt="image" src="https://github.com/user-attachments/assets/41950dc1-cc2a-4e12-bba5-58ec4097dff5" />
    <img width="687" alt="image" src="https://github.com/user-attachments/assets/c9fb0195-3c40-42ad-abca-c9114201939c" />
 
-### 4. DevOps・インフラ構成
-
-#### CI/CD構成（GitHub Actions）
-
-本アプリケーションは、**AWS環境**にデプロイされており、**GitHub Actionsを用いたCI/CDパイプライン**
-を構築しています。これにより、ソースコードの変更が自動的にビルド・テスト・デプロイまで反映され、開発と運用を効率化しています。
-
-- **CI（継続的インテグレーション）**
-    - **目的**：ソースコードの品質を担保し、問題のある変更を未然に防ぐ
-    - **トリガー**：プルリクエスト作成時
-    - **実行内容**：
-        - `JUnit` による自動テストを実行
-        - テスト結果に応じてマージの可否を判断
-
-- **CD（継続的デプロイ）**
-    - **目的**：安全かつ迅速に本番環境へアプリケーションを反映
-    - **トリガー**：`main`ブランチへのマージ
-    - **実行内容**：
-        1. Javaアプリケーションのビルド
-        2. SSHでEC2サーバーに接続
-        3. デプロイスクリプトを実行し、アプリケーションを再起動
-
-#### インフラ環境（AWS）
-
-| 項目     | 技術/サービス                     |
-|--------|-----------------------------|
-| サーバー   | Amazon EC2（Docker 実行）       |
-| データベース | Amazon RDS（MySQL）           |
-| CI/CD  | GitHub Actions + Shellスクリプト |
-| 接続方式   | SSH・パブリックIP経由               |
-
-#### EC2構成
-
-```mermaid
-graph TD
-    subgraph Internet
-        Client1["任意の外部アクセス（0.0.0.0/0）"]
-        GitHubActions["GitHub Actions"]
-    end
-
-    subgraph AWS VPC
-        ALB["ALB/リスナー: HTTP:80"]
-        EC2["EC2/StudentManagement.jar/8080"]
-        RDS["RDS/MySQL:3306"]
-    end
-
-    Client1 -->|TCP 80| ALB
-    ALB -->|転送: HTTP 80| EC2
-    GitHubActions -->|SSH: TCP 22（SGでIP制限）| EC2
-    EC2 -->|JDBC: 3306| RDS
-```
-
-> - **インスタンスタイプ**: t2.micro（検証用の最小構成）
-> - **OS**: Amazon Linux 2023
-> - **Webアプリのデプロイ先**: `/home/ec2-user/StudentManagement.jar`
-> - **systemdでサービス化**: `StudentManagement.service` により起動管理
-
-#### セキュリティグループ構成（開発用）
-
-| ポート番号 | プロトコル | 用途                   | 接続元            | 接続先                    |
-|-------|-------|----------------------|----------------|------------------------|
-| 22    | TCP   | EC2インスタンスへのSSH接続     | 管理者のPC（固定IPなど） | EC2インスタンス（Linuxサーバー）   |
-| 80    | HTTP  | Webアクセスの受け口（ALB）     | インターネット        | ALB                    |
-| 8080  | HTTP  | アプリケーションのWeb API用ポート | ALB            | EC2インスタンス上のSpring Boot |
-| 3306  | JDBC  | アプリケーション→DB接続（MySQL） | EC2インスタンス      | RDS（MySQL）             |
-
-#### アクセス情報（例）
-
-| 種別       | URL                                                                                |
-|----------|------------------------------------------------------------------------------------|
-| パブリックIP  | `http://57.180.9.102`                                                              |
-| ALB経由URL | `http://StudentManagementALB-1511570873.ap-northeast-1.elb.amazonaws.com/students` |
-
-> **※ 注意**
-> - EC2はコスト削減のため通常は停止状態にしており、常時アクセス可能な状態ではありません。
-> - アクセス時は必要に応じてインスタンスを起動する必要があります。
-> - EC2インスタンスのパブリックIPアドレスは、再起動ごとに変更されます。
-
 ## 今後の展望
 
 - ステータスマスタに `遷移ルール` を追加し、状態遷移の制御を実装予定
 - Elasticsearch連携による全文検索
 - フロントエンドのSPA化（React予定）
+
+## 付録：画面イメージと利用例
+
+本節では、本アプリケーションの主な画面やAPIレスポンスの例を示します。
+
+実際の動作イメージをつかむ際にご活用ください。
+
+### 受講生情報管理
+
+#### 受講生プロフィール・受講情報・受講ステータスの登録
+
+<img width="793" alt="image" src="https://github.com/user-attachments/assets/63db5a25-b356-47e7-8df5-ec05f7a965a0" />
+<img width="793" alt="image" src="https://github.com/user-attachments/assets/771ec2ba-5d1d-4cde-89e1-02f64ca6424c" />
+
+#### 受講生プロフィール・受講情報・受講ステータスの更新
+
+<img width="793" alt="image" src="https://github.com/user-attachments/assets/16be7ad6-b18e-49ff-9630-42899fd7f57e" />
+
+#### 受講生プロフィールの削除（論理削除）
+
+<img width="793" alt="image" src="https://github.com/user-attachments/assets/dd84bbb8-68d0-482a-b172-c2bd0aa84837" />
+
+#### 受講生プロフィールの検索（ID指定）
+
+<img width="793" alt="image" src="https://github.com/user-attachments/assets/f573f6aa-ad71-4b5d-b4d0-2f1cd780b8ba" />
+
+#### 受講生プロフィール・受講情報・受講ステータス詳細検索（複合条件指定）
+
+<img width="871" alt="image" src="https://github.com/user-attachments/assets/40b3d172-797e-4a14-b7e5-5894747c460d" />
+
+#### クエリパラメータ指定なしの詳細検索（全件検索）
+
+<img width="871" alt="image" src="https://github.com/user-attachments/assets/d601c3e3-41b0-473f-8c87-ca2ea4b6114a" />
+
+### コース情報管理
+
+#### コースマスタの全件取得
+
+  <img width="869" alt="image" src="https://github.com/user-attachments/assets/5aaf4b1b-55b6-48ef-b73b-5d9d22c862b3" />
+
+#### コースマスタの登録
+
+  <img width="869" alt="image" src="https://github.com/user-attachments/assets/65f5eda0-b884-49f3-a2ef-c59ec4aa4528" />
+
+#### コースマスタの更新
+
+  <img width="791" alt="image" src="https://github.com/user-attachments/assets/eaaf2edc-df7a-48cd-98dc-2005308bdf23" />
+
+#### コースマスタのクローズ
+
+  <img width="791" alt="image" src="https://github.com/user-attachments/assets/61a20dfa-5263-4698-a4fa-dcec508676bc" />
+
+### データベース
+
+![image](https://github.com/user-attachments/assets/cbf6fd0e-a676-4b0e-baf3-bba38a00f459)
