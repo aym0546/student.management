@@ -1,6 +1,5 @@
 plugins {
     id 'java'
-    id 'war'
     id 'org.springframework.boot' version '3.4.1'
     id 'io.spring.dependency-management' version '1.1.7'
 }
@@ -12,6 +11,12 @@ java {
     toolchain {
         languageVersion = JavaLanguageVersion.of(21)
     }
+}
+
+// Jarの名前を固定
+bootJar {
+    archiveFileName = 'app.jar'
+    mainClass.set('raisetech.student.management.Application')
 }
 
 // Lombok適用時に追加
@@ -47,10 +52,7 @@ dependencies {
 
     // MyBatis
     implementation 'org.mybatis.spring.boot:mybatis-spring-boot-starter:3.0.4'
-
-    // APサーバー（Tomcat）
-    providedRuntime 'org.springframework.boot:spring-boot-starter-tomcat'
-
+    
     // SpringBoot Test
     testImplementation 'org.springframework.boot:spring-boot-starter-test'
     // MyBatis Test

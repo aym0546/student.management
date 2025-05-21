@@ -1,0 +1,44 @@
+services:
+
+  # MySQL
+  db:
+    image: mysql:8.0
+    environment:
+      MYSQL_DATABASE: StudentManagement
+      MYSQL_ROOT_PASSWORD: rootroot
+    volumes:
+      - db-data:/var/lib/mysql  # データの永続化
+      - ../db/init:/docker-entrypoint-initdb.d  # 初回起動時SQL読み込み
+      - ../db/my.cnf:/etc/mysql/conf.d/my.cnf
+    healthcheck:
+      test: [ "CMD", "mysqladmin", "ping", "-h", "localhost", "-u", "root", "-prootroot" ]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    expose:
+      - "3306"
+    ports:
+      - "3306:3306"
+    networks:
+      - app-network
+
+  app:
+    build:
+      context: ../
+      dockerfile: docker/Dockerfile
+    environment:
+      SPRING_PROFILES_ACTIVE: dev
+      SPRING_DATASOURCE_PASSWORD: rootroot
+    ports:
+      - "8080:8080"
+    depends_on:
+      - db
+    networks:
+      - app-network
+
+volumes:
+  db-data:
+
+networks:
+  app-network:
+    driver: bridge
